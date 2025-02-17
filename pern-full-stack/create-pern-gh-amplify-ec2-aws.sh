@@ -1412,12 +1412,6 @@ export AWS_PAGER=""
 # Exit if any command fails
 set -e
 
-# Check if argument is provided
-if [ $# -ne 1 ]; then
-    echo "You must enter an argument for the instance name. Please try again."
-    exit 1
-fi
-
 # Variables
 ECC_NAME_ARG=$1-ec2
 CREATE_DATE=$(date '+%m-%d-%Y')

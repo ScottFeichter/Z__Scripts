@@ -5,8 +5,7 @@ export AWS_PAGER=""  # Disable the AWS CLI pager so we don't get json output
 # Array of EC2 instance IDs - change them to suit your needs
 INSTANCES=(
     # !Replace with your instance IDs
-    "i-00e48f607c50c47ad"
-
+"i-0ecfd5886fe863d5b"
 
 )
 

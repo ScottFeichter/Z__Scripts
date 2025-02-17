@@ -4,12 +4,7 @@ export AWS_PAGER=""  # Disable the AWS CLI pager so we don't get json output
 
 # Array of Amplify app IDs - change them to suit your needs
 APPS=(
-"dvi5hfb6hts5o"
-"d1v837qa60bgb2"
-"d2aykwy3qz1u3w"
-"dd7skoum2xfo"
-"d27hjzc9jpqvym"
-"dhi9fw5a7hnz9"
+"neorgp-frontend-02-17-2025-2"
 )
 
 # Function to delete an Amplify app

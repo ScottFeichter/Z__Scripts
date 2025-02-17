@@ -6,17 +6,8 @@ REPOS=(
     # BE SURE TO REPLACE THESE WITH THE NAMES YOU WANT TO DELETE
     # ALSO BE SURE YOU HAVE AT LEAST ON NAME IN HERE OR IT MIGHT DELETE EVERY REPO!!!!!!!!!!!!
     # YOU DON'T NEED THESE TO BE ENCLOSED IN QUOTES
-fullStackTest4-backend-02-16-2025-5
-fullStackTest4-frontend-02-16-2025-5
-fullStackTest4-backend-02-16-2025-4
-fullStackTest4-frontend-02-16-2025-4
-fullStackTest4-backend-02-16-2025-3
-fullStackTest4-frontend-02-16-2025-3
-fullStackTest4-backend-02-16-2025-2
-fullStackTest4-frontend-02-16-2025-2
-fullStackTest3-backend-02-16-2025-2
-fullStackTest3-frontend-02-16-2025-2
-fullStackTest2-backend-02-16-2025-2
+neorgp-backend-02-17-2025-2
+neorgp-frontend-02-17-2025-2
 
 )
 
