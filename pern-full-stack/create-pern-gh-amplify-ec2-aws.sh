@@ -1404,7 +1404,7 @@ echo "Private Security Group (RDS): $PRIVATE_SG_ID"
 
 
 #######################################################################################
-# THE SCRIPT:
+# EC2:
 
 
 # Disable AWS CLI pager to prevent requiring 'q' to continue
@@ -1460,7 +1460,7 @@ else
 fi
 
 echo "Ready to generate instance..."
-INSTANCE_NAME="$ECC_NAME_ARG-$CREATE_DATE-$INSTANCE_VERSION"
+INSTANCE_NAME="$ECC_NAME_ARG-$CREATE_DATE-$REPO_VERSION-v-$INSTANCE_VERSION"
 
 # Print the variables (for verification)
 echo "Name Argument: $ECC_NAME_ARG"
@@ -1669,6 +1669,138 @@ echo "Device Name: $DEVICE_NAME"
 
 
 
+
+
+
+
+
+
+
+
+#######################################################################################
+# RDS
+
+# Disable AWS CLI pager
+export AWS_PAGER=""
+
+# Exit if any command fails
+set -e
+
+# Read from .env file
+if [ -f .env ]; then
+    # Read DB_PASSWORD from .env file
+    DB_PASSWORD=$(grep '^DB_PASSWORD=' .env | cut -d '=' -f2)
+    # Export it for use in the script
+    export DB_PASSWORD
+else
+    echo "Error: .env file not found"
+    exit 1
+fi
+
+# Validate that DB_PASSWORD was loaded
+if [ -z "$DB_PASSWORD" ]; then
+    echo "Error: DB_PASSWORD not found in .env file"
+    exit 1
+fi
+
+# Keep the existing password validation checks
+if [ ${#DB_PASSWORD} -lt 8 ] || [ ${#DB_PASSWORD} -gt 41 ]; then
+    echo "Error: DB_PASSWORD must be between 8 and 41 characters long"
+    exit 1
+fi
+
+# Check for whitespace
+if echo "$DB_PASSWORD" | grep -q "[[:space:]]"; then
+    echo "Error: DB_PASSWORD cannot contain whitespace characters"
+    exit 1
+fi
+
+#
+
+# Variables
+DB_IDENTIFIER="$ARG-$CREATE_DATE-$REPO_VERSION-postgres-db"
+SUBNET_GROUP_NAME="$ARG-$CREATE_DATE-$REPO_VERSION-db-subnet-group"
+
+
+
+# Verify VPC exists
+if [ -z "$VPC_ID" ] || [ "$VPC_ID" = "None" ]; then
+    echo "Error: No VPC found"
+    exit 1
+fi
+
+echo "Using VPC: $VPC_ID"
+
+echo "PRIVATE_SUBNET_ID_1:"
+echo $PRIVATE_SUBNET_ID_1
+echo "PRIVATE_SUBNET_ID_2:"
+echo $PRIVATE_SUBNET_ID_2
+
+# Create DB subnet group
+echo "Creating DB subnet group..."
+aws rds create-db-subnet-group \
+    --db-subnet-group-name "$SUBNET_GROUP_NAME" \
+    --db-subnet-group-description "Subnet group for PostgreSQL RDS" \
+    --subnet-ids ${PRIVATE_SUBNET_ID_1} ${PRIVATE_SUBNET_ID_2}
+    # --subnet-ids '["'${PRIVATE_SUBNET_ID_1}'","'${PRIVATE_SUBNET_ID_2}'"]'
+    # --subnet-ids "[\"${PRIVATE_SUBNET_ID_1}\",\"${PRIVATE_SUBNET_ID_2}\"]"
+
+
+
+
+
+# Create RDS instance
+echo "Creating RDS instance..."
+aws rds create-db-instance \
+    --db-instance-identifier "$DB_IDENTIFIER" \
+    --db-instance-class db.t3.micro \
+    --engine postgres \
+    --engine-version 15.10 \
+    --master-username postgres \
+    --master-user-password "${DB_PASSWORD}" \
+    --allocated-storage 20 \
+    --storage-type gp3 \
+    --vpc-security-group-ids "$PRIVATE_SG_ID" \
+    --db-subnet-group-name "$SUBNET_GROUP_NAME" \
+    --no-publicly-accessible \
+    --port 5432 \
+    --backup-retention-period 7 \
+    --no-multi-az \
+    --auto-minor-version-upgrade \
+    --deletion-protection \
+    --storage-encrypted \
+    --tags "Key=Name,Value=$DB_IDENTIFIER"
+
+echo "Waiting for RDS instance to be available..."
+aws rds wait db-instance-available --db-instance-identifier "$DB_IDENTIFIER"
+
+# Get instance details
+INSTANCE_INFO=$(aws rds describe-db-instances \
+    --db-instance-identifier "$DB_IDENTIFIER" \
+    --query 'DBInstances[0].[Endpoint.Address,Endpoint.Port,DBInstanceStatus]' \
+    --output text)
+
+ENDPOINT=$(echo $INSTANCE_INFO | cut -d' ' -f1)
+PORT=$(echo $INSTANCE_INFO | cut -d' ' -f2)
+STATUS=$(echo $INSTANCE_INFO | cut -d' ' -f3)
+
+echo "----------------------------------------"
+echo "RDS Instance Created Successfully!"
+echo "Endpoint: $ENDPOINT"
+echo "Port: $PORT"
+echo "Status: $STATUS"
+echo "----------------------------------------"
+echo "Connection string format:"
+echo "postgresql://postgres:${DB_PASSWORD}@${ENDPOINT}:${PORT}/postgres"
+echo "----------------------------------------"
+echo "Note: This RDS instance is in private subnets."
+echo "To connect, you'll need to be in the VPC (e.g., through a bastion host or VPN)"
+
+
+
+
+
+
 #######################################################################################
 # LOGING IN TO EC2, MOUNTING EBS, INSTALLING NVM AND NODE.JS
 # Exit on any error
@@ -1810,127 +1942,6 @@ echo "Script completed. SSH session terminated."
 
 
 
-
-
-
-
-
-
-#######################################################################################
-# RDS
-
-# Disable AWS CLI pager
-export AWS_PAGER=""
-
-# Exit if any command fails
-set -e
-
-# Read from .env file
-if [ -f .env ]; then
-    # Read DB_PASSWORD from .env file
-    DB_PASSWORD=$(grep '^DB_PASSWORD=' .env | cut -d '=' -f2)
-    # Export it for use in the script
-    export DB_PASSWORD
-else
-    echo "Error: .env file not found"
-    exit 1
-fi
-
-# Validate that DB_PASSWORD was loaded
-if [ -z "$DB_PASSWORD" ]; then
-    echo "Error: DB_PASSWORD not found in .env file"
-    exit 1
-fi
-
-# Keep the existing password validation checks
-if [ ${#DB_PASSWORD} -lt 8 ] || [ ${#DB_PASSWORD} -gt 41 ]; then
-    echo "Error: DB_PASSWORD must be between 8 and 41 characters long"
-    exit 1
-fi
-
-# Check for whitespace
-if echo "$DB_PASSWORD" | grep -q "[[:space:]]"; then
-    echo "Error: DB_PASSWORD cannot contain whitespace characters"
-    exit 1
-fi
-
-#
-
-# Variables
-DB_IDENTIFIER="$ARG-postgres-db"
-SUBNET_GROUP_NAME="$ARG-db-subnet-group"
-
-
-
-# Verify VPC exists
-if [ -z "$VPC_ID" ] || [ "$VPC_ID" = "None" ]; then
-    echo "Error: No VPC found"
-    exit 1
-fi
-
-echo "Using VPC: $VPC_ID"
-
-
-
-# Create DB subnet group
-echo "Creating DB subnet group..."
-aws rds create-db-subnet-group \
-    --db-subnet-group-name "$SUBNET_GROUP_NAME" \
-    --db-subnet-group-description "Subnet group for PostgreSQL RDS" \
-    --subnet-ids ${PRIVATE_SUBNET_1_ID} ${PRIVATE_SUBNET_2_ID}
-    # --subnet-ids '["'${PRIVATE_SUBNET_1_ID}'","'${PRIVATE_SUBNET_2_ID}'"]'
-    # --subnet-ids "[\"${PRIVATE_SUBNET_1_ID}\",\"${PRIVATE_SUBNET_2_ID}\"]"
-
-
-
-
-
-# Create RDS instance
-echo "Creating RDS instance..."
-aws rds create-db-instance \
-    --db-instance-identifier "$DB_IDENTIFIER" \
-    --db-instance-class db.t3.micro \
-    --engine postgres \
-    --engine-version 15.4 \
-    --master-username postgres \
-    --master-user-password "${DB_PASSWORD}" \
-    --allocated-storage 20 \
-    --storage-type gp3 \
-    --vpc-security-group-ids "$PRIVATE_SG_ID" \
-    --db-subnet-group-name "$SUBNET_GROUP_NAME" \
-    --no-publicly-accessible \
-    --port 5432 \
-    --backup-retention-period 7 \
-    --multi-az false \
-    --auto-minor-version-upgrade true \
-    --deletion-protection true \
-    --storage-encrypted true \
-    --tags "Key=Name,Value=$DB_IDENTIFIER"
-
-echo "Waiting for RDS instance to be available..."
-aws rds wait db-instance-available --db-instance-identifier "$DB_IDENTIFIER"
-
-# Get instance details
-INSTANCE_INFO=$(aws rds describe-db-instances \
-    --db-instance-identifier "$DB_IDENTIFIER" \
-    --query 'DBInstances[0].[Endpoint.Address,Endpoint.Port,DBInstanceStatus]' \
-    --output text)
-
-ENDPOINT=$(echo $INSTANCE_INFO | cut -d' ' -f1)
-PORT=$(echo $INSTANCE_INFO | cut -d' ' -f2)
-STATUS=$(echo $INSTANCE_INFO | cut -d' ' -f3)
-
-echo "----------------------------------------"
-echo "RDS Instance Created Successfully!"
-echo "Endpoint: $ENDPOINT"
-echo "Port: $PORT"
-echo "Status: $STATUS"
-echo "----------------------------------------"
-echo "Connection string format:"
-echo "postgresql://postgres:${DB_PASSWORD}@${ENDPOINT}:${PORT}/postgres"
-echo "----------------------------------------"
-echo "Note: This RDS instance is in private subnets."
-echo "To connect, you'll need to be in the VPC (e.g., through a bastion host or VPN)"
 
 
 

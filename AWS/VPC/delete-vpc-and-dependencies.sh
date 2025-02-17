@@ -14,10 +14,9 @@ export AWS_PAGER=""
 
 # List of VPCs to delete
 VPC_LIST=(
-"vpc-0543b36ec12e6c1aa"
-"vpc-08ce8f0c3b271679d"
-"vpc-0b08a359e59475627"
-"vpc-0d530a36cb000b9b8"
+"vpc-031c7129b81b78219"
+"vpc-09b6566e1098e2b17"
+"vpc-0b725a9c2cbd37681"
     # Add more VPC IDs as needed
 )
 
