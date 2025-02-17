@@ -20,6 +20,7 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
+ARG=$1
 NAME_ARG=$1-frontend
 CREATE_DATE=$(date '+%m-%d-%Y')
 REPO_VERSION=1
@@ -1853,23 +1854,11 @@ if echo "$DB_PASSWORD" | grep -q "[[:space:]]"; then
     exit 1
 fi
 
-# Validate password complexity
-if ! echo "$DB_PASSWORD" | grep -q "[A-Z]" || \
-   ! echo "$DB_PASSWORD" | grep -q "[a-z]" || \
-   ! echo "$DB_PASSWORD" | grep -q "[0-9]" || \
-   ! echo "$DB_PASSWORD" | grep -q "[!@#$%^&()_+{}[]:<>?.]"; then
-    echo "Error: DB_PASSWORD must contain uppercase, lowercase, numbers, and special characters"
-    exit 1
-fi
-
-
-
-# If all checks pass, proceed with RDS creation
-echo "Password validation passed, proceeding with RDS creation..."
+#
 
 # Variables
-DB_IDENTIFIER="$1-postgres-db"
-SUBNET_GROUP_NAME="$1-db-subnet-group"
+DB_IDENTIFIER="$ARG-postgres-db"
+SUBNET_GROUP_NAME="$ARG-db-subnet-group"
 
 
 
@@ -1888,7 +1877,12 @@ echo "Creating DB subnet group..."
 aws rds create-db-subnet-group \
     --db-subnet-group-name "$SUBNET_GROUP_NAME" \
     --db-subnet-group-description "Subnet group for PostgreSQL RDS" \
-    --subnet-ids "${PRIVATE_SUBNET_1_ID}" "${PRIVATE_SUBNET_2_ID}"
+    --subnet-ids ${PRIVATE_SUBNET_1_ID} ${PRIVATE_SUBNET_2_ID}
+    # --subnet-ids '["'${PRIVATE_SUBNET_1_ID}'","'${PRIVATE_SUBNET_2_ID}'"]'
+    # --subnet-ids "[\"${PRIVATE_SUBNET_1_ID}\",\"${PRIVATE_SUBNET_2_ID}\"]"
+
+
+
 
 
 # Create RDS instance
