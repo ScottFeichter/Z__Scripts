@@ -8,7 +8,7 @@ VOLUMES=(
 "vol-05b9414d860a757df"
 "vol-0690fd384b25ea92a"
 "vol-07530e0b44b525256"
-"vol-06e7d00b1c4baf801"
+"vol-0cf1d184fe2197a7a"
 )
 
 # Function to delete an EBS volume

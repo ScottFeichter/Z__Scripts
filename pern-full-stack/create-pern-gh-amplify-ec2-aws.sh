@@ -861,7 +861,7 @@ generate_secure_password() {
     local uppers=$(openssl rand -base64 32 | tr -dc 'A-Z' | head -c 5)
     local lowers=$(openssl rand -base64 32 | tr -dc 'a-z' | head -c 5)
     local numbers=$(openssl rand -base64 32 | tr -dc '0-9' | head -c 5)
-    local specials=$(openssl rand -base64 32 | tr -dc '!@#$%^&*()_+{}[]:<>?.,' | head -c 5)
+    local specials=$(openssl rand -base64 32 | tr -dc '!@#$%^&()_+{}[]:<>?.' | head -c 5)
 
     # Combine all components
     local password="${uppers}${lowers}${numbers}${specials}"
@@ -876,7 +876,7 @@ generate_secure_password() {
 
 # Generate secure password
 SECURE_DB_PASSWORD_BASE=$(generate_secure_password)
-SECURE_DB_PASSWORD=$SECURE_DB_PASSWORD_BASE@
+SECURE_DB_PASSWORD=$SECURE_DB_PASSWORD_BASE
 
 
 # Create .env file with secure password

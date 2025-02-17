@@ -1,66 +1,20 @@
 #!/bin/bash
 
 # This script:
-
         # Takes a list of VPC IDs to delete
-
         # For each VPC:
-
                 # Checks if it exists
-
-                # Detaches and deletes dependent resources (see below)
-
+                # Detaches and deletes dependent resources
                 # Deletes all Subnets
-
                 # Deletes non-main Route Tables
-
                 # Deletes non-default Security Groups
-
                 # Finally deletes the VPC itself
 
-#######################################################################################
-
-        # When you delete a VPC, AWS automatically deletes all associated subnets.
-
-        # However, you must first delete or detach other dependent resources in this order:
-
-                # Resources that must be deleted manually BEFORE deleting a VPC:
-
-                        # 1.  EC2 instances
-
-                        # 2.  NAT Gateways
-
-                        # 3.  Transit Gateway attachments
-
-                        # 4.  VPC endpoints
-
-                        # 5.  VPC peering connections
-
-                        # 6.  Load balancers
-
-                        # 7.  Interface endpoints
-
-
-                # Resources that are automatically deleted WITH the VPC:
-
-                        # 1.  Subnets
-
-                        # 2.  Security Groups (except the default)
-
-                        # 3.  Network ACLs (except the default)
-
-                        # 4.  Route Tables (except the default)
-
-                        # 5.  DHCP options associations
-
-
-
-#######################################################################################
 export AWS_PAGER=""
 
 # List of VPCs to delete
 VPC_LIST=(
-"vpc-023a25a6bb554deae"
+"vpc-0a4778fab58d36e86"
     # Add more VPC IDs as needed
 )
 
@@ -77,6 +31,50 @@ delete_vpc() {
         echo "----------------------------------------"
         return 1
     }
+
+    # Terminate EC2 instances first
+    echo "  Checking for and terminating EC2 instances..."
+    instance_ids=$(aws ec2 describe-instances \
+        --filters "Name=vpc-id,Values=$vpc_id" \
+        --query 'Reservations[].Instances[].InstanceId' \
+        --output text)
+
+    if [ ! -z "$instance_ids" ] && [ "$instance_ids" != "None" ]; then
+        echo "  Terminating instances: $instance_ids"
+        aws ec2 terminate-instances --instance-ids $instance_ids
+        echo "  Waiting for instances to terminate..."
+        aws ec2 wait instance-terminated --instance-ids $instance_ids
+    fi
+
+    # Delete NAT Gateways
+    echo "  Checking for NAT Gateways..."
+    nat_gateway_ids=$(aws ec2 describe-nat-gateways \
+        --filter "Name=vpc-id,Values=$vpc_id" \
+        --query 'NatGateways[].NatGatewayId' \
+        --output text)
+
+    if [ ! -z "$nat_gateway_ids" ] && [ "$nat_gateway_ids" != "None" ]; then
+        for nat_id in $nat_gateway_ids; do
+            echo "  Deleting NAT Gateway: $nat_id"
+            aws ec2 delete-nat-gateway --nat-gateway-id $nat_id
+        done
+        echo "  Waiting for NAT Gateways to delete (30 seconds)..."
+        sleep 30
+    fi
+
+    # Delete VPC Endpoints
+    echo "  Checking for VPC Endpoints..."
+    vpc_endpoint_ids=$(aws ec2 describe-vpc-endpoints \
+        --filters "Name=vpc-id,Values=$vpc_id" \
+        --query 'VpcEndpoints[].VpcEndpointId' \
+        --output text)
+
+    if [ ! -z "$vpc_endpoint_ids" ] && [ "$vpc_endpoint_ids" != "None" ]; then
+        echo "  Deleting VPC Endpoints: $vpc_endpoint_ids"
+        aws ec2 delete-vpc-endpoints --vpc-endpoint-ids $vpc_endpoint_ids
+        echo "  Waiting for VPC Endpoints to delete (30 seconds)..."
+        sleep 30
+    fi
 
     # Check for and delete Internet Gateway
     echo "  Checking for Internet Gateway..."
@@ -181,7 +179,7 @@ delete_vpc() {
         fi
     done
 
-    # Check for Route Tables
+    # Delete Route Tables
     echo "  Checking for Route Tables..."
     rt_ids=$(aws ec2 describe-route-tables \
         --filters "Name=vpc-id,Values=$vpc_id" \
@@ -230,7 +228,6 @@ delete_vpc() {
     fi
     echo "----------------------------------------"
 }
-
 
 # Main execution
 echo "Starting VPC deletion process..."
