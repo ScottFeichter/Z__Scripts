@@ -1,0 +1,58 @@
+#!/bin/zsh
+
+# To make a text file executable cd to the directory then run
+
+# chmod +x myscript.zsh
+
+# To run it ./myscript.zsh argument1 argument2 etc...
+
+
+##### GENERAL ALIASES
+
+alias c="clear"
+
+
+##### GIT SETUP ALIASES
+
+alias giadc="git init; git add .; git commit -m \"initial (msg via sh alias)\""
+
+alias gitadc="git init; touch README.md; git add .; git commit -m \"initial (msg via sh alias)\""
+
+alias ghrc="gh repo create" #then add the --public flag manually
+
+alias grao="git remote add origin" #then add https://github.com/ScottFeichter/<dirName>.git
+
+alias gbmp="git branch -M main; git push -u origin main" 
+
+
+
+
+##### GIT TRACK ALIASES
+
+alias gadc="git add .; git commit -m \"misc (msg via sh alias)\""
+
+alias gadcp="git add .; git commit -m \"misc (msg via sh alias)\"; git push"
+
+alias gaac="git add -A; git commit -m \"misc (msg via sh alias)\""
+
+alias gaacp="git add -A; git commit -m \"misc (msg via sh alias)\"; git push"
+
+
+##### SEQUELIZE ALIASES
+
+alias ndsdma="npx dotenv sequelize-cli db:migrate"
+
+alias ndsdmau="npx dotenv sequelize-cli db:migrate:undo:all"
+
+alias ndsdsa="npx dotenv sequelize-cli db:seed:all"
+
+alias ndsdsau="npx dotenv sequelize-cli db:seed:undo:all"
+
+
+##### NPM ALIASES
+
+alias nrb="npm run build"
+
+alias nrd="npm run dev"
+
+alias ns="npm start"

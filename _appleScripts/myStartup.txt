@@ -1,0 +1,27 @@
+- I tried to start to create an apple script with the help of Q
+- My goal was to automate the process of opening apps and placing them on spaces at computer startup
+- I installed Apple Script extension for VScode
+- I tried to write it as an osascpt file but it seemed to want to run when I would click on it
+- So I changed it to .txt and copied it to another file saved in Script Editor
+- I was trying to avoid using script editor and use vscode installed
+- But it looks like this might not be possible
+- I commented out the other file in script editor so it would not run inadvertantly
+- Below is what I had
+
+
+-- Keep in mind that while you can write the scripts in VS Code, you'll still need the Script Editor application to compile and run the scripts. The extension primarily helps with the writing and editing experience.
+
+
+tell application "System Events"
+    -- Launch your applications
+    tell application "Microsoft Outlook" to activate
+    delay 2 -- Add a delay to allow the app to launch
+
+    tell application "Safari" to activate
+    delay 2
+
+    tell application "Notes" to activate
+    delay 2
+
+    -- Add more applications as needed
+end tell
