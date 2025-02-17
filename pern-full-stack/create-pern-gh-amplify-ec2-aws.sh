@@ -1857,7 +1857,7 @@ fi
 if ! echo "$DB_PASSWORD" | grep -q "[A-Z]" || \
    ! echo "$DB_PASSWORD" | grep -q "[a-z]" || \
    ! echo "$DB_PASSWORD" | grep -q "[0-9]" || \
-   ! echo "$DB_PASSWORD" | grep -q "[!@#\$%^&*()_+{}\[\]:;<>,.?~\-\+]"; then
+   ! echo "$DB_PASSWORD" | grep -q "[!@#$%^&()_+{}[]:<>?.]"; then
     echo "Error: DB_PASSWORD must contain uppercase, lowercase, numbers, and special characters"
     exit 1
 fi
