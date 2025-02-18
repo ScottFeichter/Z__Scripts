@@ -38,13 +38,13 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-NAME_ARG=$1-backend
+BACKEND_NAME_ARG=$1-backend
 CREATE_DATE=$(date '+%m-%d-%Y')
 REPO_VERSION=1
 
 # Function to check if repository exists and get latest version
 check_repo_version() {
-    local base_name="$NAME_ARG-$CREATE_DATE"
+    local base_name="$BACKEND_NAME_ARG-$CREATE_DATE"
 
     # Check GitHub repositories
     local existing_repos=$(gh repo list ScottFeichter --json name --limit 100 | grep -o "\"name\":\"$base_name-[0-9]*\"")
@@ -80,20 +80,23 @@ check_repo_version() {
 check_repo_version
 
 # Create the final repo name with the appropriate version
-REPO_NAME="$NAME_ARG-$CREATE_DATE-$REPO_VERSION"
+BACKEND_REPO_NAME="$BACKEND_NAME_ARG-$CREATE_DATE-$REPO_VERSION"
 
-# Create directory and initialize repository
-mkdir "$REPO_NAME"
-cd "$REPO_NAME"
 
+# Create directory
+mkdir "$BACKEND_REPO_NAME"
+cd "$BACKEND_REPO_NAME"
+
+
+# Initialize repository local and remote and push
 git init
 touch README.md
 git add .
 git commit -m "initial (msg via shell)"
 
-gh repo create "$REPO_NAME" --public
+gh repo create "$BACKEND_REPO_NAME" --public
 
-git remote add origin "https://github.com/ScottFeichter/$REPO_NAME.git"
+git remote add origin "https://github.com/ScottFeichter/$BACKEND_REPO_NAME.git"
 git branch -M main
 git push -u origin main
 
@@ -111,7 +114,7 @@ npm init -y
 # Update package.json with scripts and dependencies
 cat > package.json << EOL
 {
-  "name": "${REPO_NAME}",
+  "name": "${BACKEND_REPO_NAME}",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
