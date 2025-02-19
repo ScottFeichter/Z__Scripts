@@ -1037,86 +1037,106 @@ echo " "
 echo "Initializing npm project..."
 npm init -y
 
+# Install dependencies
+echo "Installing dependencies..."
+npm install \
+    bcryptjs \
+    cookie-parser \
+    cors \
+    csurf \
+    dotenv \
+    express \
+    express-async-errors \
+    express-validator \
+    helmet \
+    jsonwebtoken \
+    morgan \
+    per-env \
+    pg \
+    sequelize \
+    sequelize-cli
+
+# Install development dependencies
+echo "Installing development dependencies..."
+npm install --save-dev \
+    @types/bcryptjs \
+    @types/cookie-parser \
+    @types/cors \
+    @types/csurf \
+    @types/express \
+    @types/helmet \
+    @types/jsonwebtoken \
+    @types/morgan \
+    @types/node \
+    @types/sequelize \
+    dotenv-cli \
+    nodemon \
+    ts-node \
+    typescript
+
 # Update package.json with scripts and dependencies
 cat > package.json << EOL
 {
-  "name": "${BACKEND_REPO_NAME}",
+  "name": "\${BACKEND_REPO_NAME}",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "sequelize": "sequelize",
     "sequelize-cli": "sequelize-cli",
     "start": "per-env",
-    "start:development": "nodemon ./bin/www",
-    "start:production": "node ./bin/www",
-    "build": "node psql-setup-script.js"
+    "start:development": "nodemon ./src/bin/www.ts",
+    "start:production": "node ./dist/bin/www.js",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
-    "csurf": "^1.11.0",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "express-async-errors": "^3.1.1",
-    "express-validator": "^7.2.0",
-    "helmet": "^7.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "morgan": "^1.10.0",
-    "per-env": "^1.0.2",
-    "pg": "^8.12.0",
-    "sequelize": "^6.37.3",
-    "sequelize-cli": "^6.6.2"
-  },
-  "devDependencies": {
-    "dotenv-cli": "^7.4.1",
-    "nodemon": "^3.1.0"
+  "license": "ISC"
+}
+EOL
+
+# Create directory structure
+mkdir -p src/bin src/config src/db/migrations src/db/models src/db/seeders src/routes src/utils dist
+
+# Create tsconfig.json
+cat > tsconfig.json << EOL
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "CommonJS",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true
   }
 }
 EOL
 
-# Install dependencies
-echo "Installing dependencies..."
-npm install
-
-# Create directory structure
-mkdir -p bin config db/migrations db/models db/seeders routes utils
-
 # Create main application file
-cat > app.js << EOL
-const express = require('express');
-const morgan = require('morgan');
-const cors = require('cors');
-const csurf = require('csurf');
-const helmet = require('helmet');
-const cookieParser = require('cookie-parser');
-const { environment } = require('./config');
-const routes = require('./routes');
-const { ValidationError } = require('sequelize');
+cat > src/app.ts << EOL
+import express from 'express';
+import morgan from 'morgan';
+import cors from 'cors';
+import csurf from 'csurf';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import { environment } from './config';
+import routes from './routes';
+import { ValidationError } from 'sequelize';
 
 const isProduction = environment === 'production';
-
 const app = express();
 
 app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.json());
 
-// Security Middleware
 if (!isProduction) {
-    // enable cors only in development
     app.use(cors());
 }
 
-// helmet helps set a variety of headers to better secure your app
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
-
-// Set the _csrf token and create req.csrfToken method
 app.use(
     csurf({
         cookie: {
@@ -1129,17 +1149,15 @@ app.use(
 
 app.use(routes);
 
-// Error handling middleware
 app.use((_req, _res, next) => {
-    const err = new Error("The requested resource couldn't be found.");
+    const err: any = new Error("The requested resource couldn't be found.");
     err.title = "Resource Not Found";
     err.errors = ["The requested resource couldn't be found."];
     err.status = 404;
     next(err);
 });
 
-app.use((err, _req, _res, next) => {
-    // check if error is a Sequelize error:
+app.use((err: any, _req, _res, next) => {
     if (err instanceof ValidationError) {
         err.errors = err.errors.map((e) => e.message);
         err.title = 'Validation error';
@@ -1147,7 +1165,7 @@ app.use((err, _req, _res, next) => {
     next(err);
 });
 
-app.use((err, _req, res, _next) => {
+app.use((err: any, _req, res, _next) => {
     res.status(err.status || 500);
     console.error(err);
     res.json({
@@ -1158,55 +1176,59 @@ app.use((err, _req, res, _next) => {
     });
 });
 
-module.exports = app;
+export default app;
 EOL
 
+
+
 # Create www file
-cat > bin/www << EOL
+cat > bin/www.ts << EOL
 #!/usr/bin/env node
 
-const { port } = require('../config');
-const app = require('../app');
-const db = require('../db/models');
+import { port } from '../config';
+import app from '../app';
+import db from '../db/models';
 
-db.sequelize
-    .authenticate()
-    .then(() => {
+async function startServer() {
+    try {
+        await db.sequelize.authenticate();
         console.log('Database connection success! Sequelize is ready to use...');
-        app.listen(port, () => console.log(\`Listening on port \${port}...\`));
-    })
-    .catch((err) => {
+        app.listen(port, () => console.log(`Listening on port ${port}...`));
+    } catch (err) {
         console.log('Database connection failure.');
         console.error(err);
-    });
+    }
+}
+
+startServer();
 EOL
 
 # Make www executable
-chmod +x bin/www
+chmod +x bin/www.ts
 
 # Create config file
-cat > config/index.js << EOL
-module.exports = {
+cat > config/index.ts << EOL
+export default {
     environment: process.env.NODE_ENV || 'development',
     port: process.env.PORT || 5000,
     db: {
-        username: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_DATABASE,
-        host: process.env.DB_HOST,
+        username: process.env.DB_USERNAME || '',
+        password: process.env.DB_PASSWORD || '',
+        database: process.env.DB_DATABASE || '',
+        host: process.env.DB_HOST || '',
     },
     jwtConfig: {
-        secret: process.env.JWT_SECRET,
-        expiresIn: process.env.JWT_EXPIRES_IN,
+        secret: process.env.JWT_SECRET || '',
+        expiresIn: process.env.JWT_EXPIRES_IN || '604800',
     },
 };
 EOL
 
 # Create database config file
-cat > config/database.js << EOL
-const config = require('./index');
+cat > config/database.ts << EOL
+import config from './index';
 
-module.exports = {
+export default {
     development: {
         username: config.db.username,
         password: config.db.password,
@@ -1228,50 +1250,12 @@ module.exports = {
 };
 EOL
 
-# Function to generate a secure password
-generate_secure_password() {
-    # Generate base password components
-    local uppers=$(openssl rand -base64 32 | tr -dc 'A-Z' | head -c 5)
-    local lowers=$(openssl rand -base64 32 | tr -dc 'a-z' | head -c 5)
-    local numbers=$(openssl rand -base64 32 | tr -dc '0-9' | head -c 5)
-    local specials=$(openssl rand -base64 32 | tr -dc '!@#$%^&()_+{}[]:<>?.' | head -c 5)
-
-    # Combine all components
-    local password="${uppers}${lowers}${numbers}${specials}"
-
-    # Shuffle the password
-    # Using fold and shuf to properly shuffle the string
-    password=$(echo "$password" | fold -w1 | shuf | tr -d '\n')
-
-    # Return exactly 20 characters
-    echo "${password:0:20}"
-}
-
-# Generate secure password
-SECURE_DB_PASSWORD_BASE=$(generate_secure_password)
-SECURE_DB_PASSWORD=$SECURE_DB_PASSWORD_BASE
-
-
-# Create .env file with secure password
-cat > .env << EOL
-PORT=5000
-DB_USERNAME=postgres
-DB_PASSWORD=${SECURE_DB_PASSWORD}
-DB_DATABASE=your_database_name
-DB_HOST=localhost
-JWT_SECRET=your_jwt_secret_here
-JWT_EXPIRES_IN=604800
-EOL
-
-echo "Created .env file with secure database password"
-
-
 # Create .sequelizerc file
 cat > .sequelizerc << EOL
 const path = require('path');
 
 module.exports = {
-  'config': path.resolve('config', 'database.js'),
+  'config': path.resolve('config', 'database.ts'),
   'models-path': path.resolve('db', 'models'),
   'seeders-path': path.resolve('db', 'seeders'),
   'migrations-path': path.resolve('db', 'migrations')
@@ -1279,26 +1263,28 @@ module.exports = {
 EOL
 
 # Create psql setup script
-cat > psql-setup-script.js << EOL
-const { sequelize } = require('./db/models');
+cat > psql-setup-script.ts << EOL
+import { sequelize } from './db/models';
 
-sequelize.showAllSchemas({ logging: false }).then(async (data) => {
-    if (!data.includes(process.env.SCHEMA)) {
+(async () => {
+    const schemas = await sequelize.showAllSchemas({ logging: false });
+    if (!schemas.includes(process.env.SCHEMA)) {
         await sequelize.createSchema(process.env.SCHEMA);
     }
-});
+})();
 EOL
 
 # Create routes index file
-cat > routes/index.js << EOL
-const express = require('express');
+cat > routes/index.ts << EOL
+import express from 'express';
+
 const router = express.Router();
 
 router.get('/api/test', (req, res) => {
     res.json({ message: 'Success' });
 });
 
-module.exports = router;
+export default router;
 EOL
 
 # Create .gitignore
@@ -1306,12 +1292,13 @@ cat > .gitignore << EOL
 node_modules
 .env
 .DS_Store
+dist/
 EOL
-echo "finished .gitignore"
+
+echo "Finished .gitignore"
 
 # Initialize Sequelize
 npx sequelize-cli init || true
-
 
 # Create buildspec.yml for AWS CodeBuild
 echo " "
@@ -1339,7 +1326,6 @@ EOL
 echo " "
 echo "Backend setup complete!"
 echo " "
-
 
 
 
@@ -1975,7 +1961,7 @@ echo "ssh -i ${KEY_PAIR_NAME}.pem ec2-user@${PUBLIC_IP}"
 
 
 #######################################################################################
-# THE SCRIPT
+# EBS SCRIPT
 
 # Environment variables that need to be set
 EC2_INSTANCE_ID=$INSTANCE_ID  # Replace with your EC2 instance ID
