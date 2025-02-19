@@ -18,9 +18,9 @@ fi
 
 echo "CREATING ADMIN..."
 ARG=$1
-ADMIN_NAME_ARG=$1-admiend
-FRONTEND_NAME_ARG=$1-frontend
-BACKEND_NAME_ARG=$1-backend
+ADMIN_NAME_ARG=admiend-$1
+FRONTEND_NAME_ARG=frontend-$1
+BACKEND_NAME_ARG=backend-$1
 CREATE_DATE=$(date '+%m-%d-%Y')
 REPO_VERSION=1
 
@@ -468,7 +468,7 @@ mkdir -p .git/hooks
 
 # Create post-push hook
 echo "Creating post-push hook..."
-cat > .git/hooks/post-push << EOL
+cat > .git/hooks/pre-push << EOL
 #!/bin/bash
 
 # Log start of sync
