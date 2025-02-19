@@ -7,7 +7,8 @@ APPS=(
 "d2ehsdmrja2fl1"
 "d2igc8pjq7990q"
 "d5f2f2mxponf9"
-"d26futz7ynqhcz"
+d3vke3idwjkz4c
+
 )
 
 # Function to delete an Amplify app

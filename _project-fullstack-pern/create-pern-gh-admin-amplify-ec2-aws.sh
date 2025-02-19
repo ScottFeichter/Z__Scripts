@@ -1115,8 +1115,8 @@ cat > package.json << EOL
     "sequelize": "sequelize",
     "sequelize-cli": "sequelize-cli",
     "start": "per-env",
-    "start:development": "nodemon ./src/bin/www.ts",
-    "start:production": "node ./dist/bin/www.js",
+    "start:development": "nodemon ./src/bin/www",
+    "start:production": "node ./dist/bin/www",
     "build": "tsc"
   },
   "keywords": [],
@@ -1218,7 +1218,7 @@ EOL
 
 
 # Create www file
-cat > bin/www.ts << EOL
+cat > bin/www << EOL
 #!/usr/bin/env node
 
 import { port } from '../config';
@@ -1240,7 +1240,7 @@ startServer();
 EOL
 
 # Make www executable
-chmod +x bin/www.ts
+chmod +x bin/www
 
 # Create config file
 cat > config/index.ts << EOL
