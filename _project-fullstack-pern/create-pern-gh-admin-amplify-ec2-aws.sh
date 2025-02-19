@@ -533,11 +533,11 @@ chmod +x .git/hooks/pre-push
 
 # Verify the hook was created
 if [ -x .git/hooks/post-push ]; then
-    echo "Successfully created and configured post-push hook"
-    echo "Hook location: .git/hooks/post-push"
+    echo "Successfully created and configured pre-push hook"
+    echo "Hook location: .git/hooks/pre-push"
     echo "The hook will sync to S3 bucket: ${BUCKET_NAME}"
 else
-    echo "Failed to create post-push hook"
+    echo "Failed to create pre-push hook"
     exit 1
 fi
 

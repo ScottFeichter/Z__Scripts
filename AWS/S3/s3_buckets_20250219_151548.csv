@@ -1,0 +1,6 @@
+BUCKET NAME,QUOTE,CREATION DATE,QUOTE,REGION,QUOTE,BUCKET URL,QUOTE,BUCKET ARN,QUOTE
+"admiend-do-reg-me-02-19-2025-2-20250219150942-24733370","""","2025-02-19 23:09:46+00:00","""","None","""","https://admiend-do-reg-me-02-19-2025-2-20250219150942-24733370.s3.None.amazonaws.com","""","arn:aws:s3:::admiend-do-reg-me-02-19-2025-2-20250219150942-24733370",""""
+"admiend-do-reg-me-02-19-2025-2-20250219151244-4a3e11d0","""","2025-02-19 23:12:47+00:00","""","None","""","https://admiend-do-reg-me-02-19-2025-2-20250219151244-4a3e11d0.s3.None.amazonaws.com","""","arn:aws:s3:::admiend-do-reg-me-02-19-2025-2-20250219151244-4a3e11d0",""""
+"elasticbeanstalk-us-east-1-588627308247","""","2024-12-23 19:17:49+00:00","""","None","""","https://elasticbeanstalk-us-east-1-588627308247.s3.None.amazonaws.com","""","arn:aws:s3:::elasticbeanstalk-us-east-1-588627308247",""""
+"lambdasam-3f87d4375a-us-east-1","""","2025-01-20 06:24:57+00:00","""","None","""","https://lambdasam-3f87d4375a-us-east-1.s3.None.amazonaws.com","""","arn:aws:s3:::lambdasam-3f87d4375a-us-east-1",""""
+"neorgp-admiend-02-18-2025-2-20250218233855-e32f12c4","""","2025-02-19 04:38:59+00:00","""","None","""","https://neorgp-admiend-02-18-2025-2-20250218233855-e32f12c4.s3.None.amazonaws.com","""","arn:aws:s3:::neorgp-admiend-02-18-2025-2-20250218233855-e32f12c4",""""

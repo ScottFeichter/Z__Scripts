@@ -4,8 +4,8 @@ export AWS_PAGER=""  # Disable the AWS CLI pager so we don't get json output
 
 # Array of bucket names - change them to suit your needs
 BUCKETS=(
-"elasticbeanstalk-us-east-1-588627308247"
-"ilikeit-admiend-02-18-2025-2-20250218044505-d41d621f"
+admiend-do-reg-me-02-19-2025-2-20250219150942-24733370
+admiend-do-reg-me-02-19-2025-2-20250219151244-4a3e11d0
 "testfulladmin"
 )
 
