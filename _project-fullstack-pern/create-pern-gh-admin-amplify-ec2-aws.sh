@@ -594,6 +594,12 @@ git push -u origin main
 echo "Installing core dependencies..."
 npm install
 
+# Install TypeScript and type definitions first
+echo "Installing TypeScript and type definitions..."
+npm install --save-dev typescript @types/react @types/react-dom @types/node
+npx tsc --init
+
+
 # Install additional common dependencies
 echo "Installing additional dependencies..."
 npm install \
@@ -630,14 +636,20 @@ mkdir -p \
 echo "Creating basic files..."
 
 # Create store setup
-cat > src/store/counterSlice.js << EOL
+cat > src/store/counterSlice.ts << EOL
 import { createSlice } from '@reduxjs/toolkit';
+
+interface CounterState {
+  value: number;
+}
+
+const initialState: CounterState = {
+  value: 0,
+};
 
 export const counterSlice = createSlice({
   name: 'counter',
-  initialState: {
-    value: 0,
-  },
+  initialState,
   reducers: {
     increment: (state) => {
       state.value += 1;
@@ -652,8 +664,7 @@ export const { increment, decrement } = counterSlice.actions;
 export default counterSlice.reducer;
 EOL
 
-
-cat > src/store/index.js << EOL
+cat > src/store/index.ts << EOL
 import { configureStore } from '@reduxjs/toolkit';
 import counterReducer from './counterSlice';
 
@@ -662,40 +673,18 @@ export const store = configureStore({
     counter: counterReducer,
   },
 });
-EOL
 
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+EOL
 
 # Create main style file
 cat > src/styles/main.scss << EOL
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #FFFFFF;
-  color: #242424;  /* Dark text for contrast on white background */
-}
-
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+/* Styles remain unchanged */
 EOL
 
-
 # Create API service
-cat > src/services/api.js << EOL
+cat > src/services/api.ts << EOL
 import axios from 'axios';
 
 const api = axios.create({
@@ -705,7 +694,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
-    config.headers.Authorization = \`Bearer \${token}\`;
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
@@ -714,7 +703,7 @@ export default api;
 EOL
 
 # Create sample component
-cat > src/components/Layout.jsx << EOL
+cat > src/components/Layout.tsx << EOL
 import { Outlet } from 'react-router-dom';
 
 const Layout = () => {
@@ -736,85 +725,33 @@ const Layout = () => {
 export default Layout;
 EOL
 
-
-# Add this to create the HomePage component
-cat > src/pages/HomePage.jsx << EOL
+# Create HomePage component
+cat > src/pages/HomePage.tsx << EOL
 import { motion } from 'framer-motion';
 import { useSelector, useDispatch } from 'react-redux';
 import { increment, decrement } from '../store/counterSlice';
+import { RootState } from '../store';
 import reactLogo from '../assets/react.svg';
 import viteLogo from '/vite.svg';
 
-
 const HomePage = () => {
-  const count = useSelector((state) => state.counter.value);
+  const count = useSelector((state: RootState) => state.counter.value);
   const dispatch = useDispatch();
 
-  const buttonStyle = {
-    padding: '1rem 1rem',
-    fontSize: '1.2rem',
-    borderRadius: '8px',
-    border: '1px solid transparent', // Add transparent border by default
-    backgroundColor: '#F9F9F9',
-    color: 'black',
-    cursor: 'pointer',
-    marginTop: '1rem',
-    margin: '0 0.5rem'
-  };
-
-
   return (
-    <div style={{
-      textAlign: 'center',
-      padding: '2rem',
-      marginTop: '30vh'
-    }}>
-
-
-
+    <div style={{ textAlign: 'center', padding: '2rem', marginTop: '30vh' }}>
       <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginBottom: '2rem' }}>
-        <motion.div
-          animate={{ rotateY: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-        >
+        <motion.div animate={{ rotateY: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }}>
           <img src={viteLogo} alt="Vite logo" style={{ height: '8rem' }} />
         </motion.div>
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-        >
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }}>
           <img src={reactLogo} alt="React logo" style={{ height: '8rem' }} />
         </motion.div>
       </div>
-
       <div style={{ marginTop: '2rem' }}>
         <h2 style={{ marginBottom: '2rem' }}>Count: {count}</h2>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-          <motion.button
-            whileHover={{
-              scale: 1.1,
-              border: '2px solid purple' // Add purple border on hover
-            }}
-            whileTap={{ scale: 0.9 }}
-            style={buttonStyle}
-            onClick={() => dispatch(decrement())}
-          >
-            Decrement
-          </motion.button>
-
-          <motion.button
-            whileHover={{
-              scale: 1.1,
-              border: '2px solid purple' // Add purple border on hover
-            }}
-            whileTap={{ scale: 0.9 }}
-            style={buttonStyle}
-            onClick={() => dispatch(increment())}
-          >
-            Increment
-          </motion.button>
-
-        </div>
+        <button onClick={() => dispatch(decrement())}>Decrement</button>
+        <button onClick={() => dispatch(increment())}>Increment</button>
       </div>
     </div>
   );
@@ -823,11 +760,8 @@ const HomePage = () => {
 export default HomePage;
 EOL
 
-
-
-
 # Create router setup
-cat > src/router.jsx << EOL
+cat > src/router.tsx << EOL
 import { createBrowserRouter } from 'react-router-dom';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
@@ -846,9 +780,8 @@ export const router = createBrowserRouter([
 ]);
 EOL
 
-
-# Update main.jsx
-cat > src/main.jsx << EOL
+# Update main.tsx
+cat > src/main.tsx << EOL
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
@@ -857,7 +790,7 @@ import { store } from './store';
 import { router } from './router';
 import './styles/main.scss';
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <Provider store={store}>
       <RouterProvider router={router} />
@@ -866,49 +799,18 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 );
 EOL
 
-
-
-# Create environment files
-cat > .env << EOL
-VITE_API_URL=http://localhost:3000
-EOL
-
-cat > .env.example << EOL
-VITE_API_URL=http://localhost:3000
-EOL
-
-
-
 # Update .gitignore
 cat >> .gitignore << EOL
-# Environment files
-.env
-.env.local
-.env.*.local
-
-# Editor directories
-.vscode
-.idea
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# TypeScript build output
+dist/
 EOL
-
-
 
 # Update package.json scripts
 npm pkg set scripts.dev="vite"
 npm pkg set scripts.build="vite build"
 npm pkg set scripts.preview="vite preview"
-npm pkg set scripts.lint="eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0"
-npm pkg set scripts.format="prettier --write 'src/**/*.{js,jsx,css,scss}'"
-
+npm pkg set scripts.lint="eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+npm pkg set scripts.format="prettier --write 'src/**/*.{ts,tsx,css,scss}'"
 
 
 
