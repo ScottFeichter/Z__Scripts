@@ -500,7 +500,7 @@ fi
 mkdir -p .git/hooks
 
 # Create post-push hook
-echo "Creating post-push hook..."
+echo "Creating pre-push hook..."
 cat > .git/hooks/pre-push << EOL
 #!/bin/bash
 
@@ -529,7 +529,7 @@ aws s3 ls s3://${BUCKET_NAME} --recursive --human-readable --summarize | tail -n
 EOL
 
 # Make the hook executable
-chmod +x .git/hooks/post-push
+chmod +x .git/hooks/pre-push
 
 # Verify the hook was created
 if [ -x .git/hooks/post-push ]; then
