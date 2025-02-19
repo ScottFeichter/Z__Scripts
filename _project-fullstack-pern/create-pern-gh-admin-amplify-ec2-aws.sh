@@ -532,7 +532,7 @@ EOL
 chmod +x .git/hooks/pre-push
 
 # Verify the hook was created
-if [ -x .git/hooks/post-push ]; then
+if [ -x .git/hooks/pre-push ]; then
     echo "Successfully created and configured pre-push hook"
     echo "Hook location: .git/hooks/pre-push"
     echo "The hook will sync to S3 bucket: ${BUCKET_NAME}"

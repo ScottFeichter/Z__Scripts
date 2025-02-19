@@ -6,7 +6,7 @@ export AWS_PAGER=""  # Disable the AWS CLI pager so we don't get json output
 BUCKETS=(
 admiend-do-reg-me-02-19-2025-2-20250219150942-24733370
 admiend-do-reg-me-02-19-2025-2-20250219151244-4a3e11d0
-"testfulladmin"
+admiend-do-reg-me-02-19-2025-2-20250219151840-19a03d45
 )
 
 # Check if jq is installed
