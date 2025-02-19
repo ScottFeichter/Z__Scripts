@@ -68,29 +68,28 @@ mkdir -p backend frontend
 cd backend
 
 touch backendRequirements.txt
-    echo "npm init -y"			>> backendRequirements.txt
-	echo "" 					>> backendRequirements.txt
-
+  echo "npm init -y"          >> backendRequirements.txt
+	echo "" 					          >> backendRequirements.txt
 	echo "# npm install for:" 	>> backendRequirements.txt
-	echo cookie-parser 			>> backendRequirements.txt;
-	echo cors 					>> backendRequirements.txt;
-	echo csurf 					>> backendRequirements.txt;
-	echo dotenv 				>> backendRequirements.txt;
-	echo express 				>> backendRequirements.txt;
+	echo cookie-parser 			    >> backendRequirements.txt;
+	echo cors 					        >> backendRequirements.txt;
+	echo csurf 					        >> backendRequirements.txt;
+	echo dotenv 				        >> backendRequirements.txt;
+	echo express 				        >> backendRequirements.txt;
 	echo express-async-errors 	>> backendRequirements.txt;
-	echo helmet 				>> backendRequirements.txt;
-	echo jsonwebtoken 			>> backendRequirements.txt;
-	echo morgan 				>> backendRequirements.txt;
-	echo per-env 				>> backendRequirements.txt;
-	echo sequelize@6 			>> backendRequirements.txt;
-	echo sequelize-cli@6 		>> backendRequirements.txt;
-	echo pg						>> backendRequirements.txt;
-	echo "" 					>> backendRequirements.txt;
+	echo helmet 				        >> backendRequirements.txt;
+	echo jsonwebtoken 			    >> backendRequirements.txt;
+	echo morgan 				        >> backendRequirements.txt;
+	echo per-env 				        >> backendRequirements.txt;
+	echo sequelize@6 			      >> backendRequirements.txt;
+	echo sequelize-cli@6 		    >> backendRequirements.txt;
+	echo pg						          >> backendRequirements.txt;
+	echo "" 					          >> backendRequirements.txt;
 
 	echo "#npm install -D for:" >> backendRequirements.txt;
-	echo sqlite3 				>> backendRequirements.txt;
-	echo dotenv-cli				>> backendRequirements.txt;
-	echo nodemon				>> backendRequirements.txt;
+	echo sqlite3 				        >> backendRequirements.txt;
+	echo dotenv-cli				      >> backendRequirements.txt;
+	echo nodemon				        >> backendRequirements.txt;
 	wait;
 
 

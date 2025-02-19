@@ -117,6 +117,35 @@ touch redux/reducers.js
 
 touch requirements/$ARG-frontend-requirements.txt
 touch requirements/$ARG-backend-requirements.txt
+    echo "LIST SUBJECT TO CHANGE - CHECK PROD ENV FOR MOST CURRENT"
+    echo "npm init -y"          >> $ARG-backend-requirements.txt
+	echo "" 					>> $ARG-backend-requirements.txt
+	echo "# npm install for:" 	>> $ARG-backend-requirements.txt
+	echo cookie-parser 			>> $ARG-backend-requirements.txt;
+	echo cors 				    >> $ARG-backend-requirements.txt;
+	echo csurf 					>> $ARG-backend-requirements.txt;
+	echo dotenv 				>> $ARG-backend-requirements.txt;
+	echo express 				>> $ARG-backend-requirements.txt;
+	echo express-async-errors 	>> $ARG-backend-requirements.txt;
+	echo helmet 				>> $ARG-backend-requirements.txt;
+	echo jsonwebtoken 			>> $ARG-backend-requirements.txt;
+	echo morgan 				>> $ARG-backend-requirements.txt;
+	echo per-env 				>> $ARG-backend-requirements.txt;
+	echo sequelize@6 			>> $ARG-backend-requirements.txt;
+	echo sequelize-cli@6 		>> $ARG-backend-requirements.txt;
+	echo pg						>> $ARG-backend-requirements.txt;
+	echo "" 					>> $ARG-backend-requirements.txt;
+
+	echo "#npm install -D for:" >> $ARG-backend-requirements.txt;
+	echo sqlite3 				>> $ARG-backend-requirements.txt;
+	echo dotenv-cli				>> $ARG-backend-requirements.txt;
+	echo nodemon				>> $ARG-backend-requirements.txt;
+	wait;
+
+
+
+
+
 
 touch schema/$ARG-schema.png
 
@@ -1125,8 +1154,13 @@ import { environment } from './config';
 import routes from './routes';
 import { ValidationError } from 'sequelize';
 
+// =================IMPORTS END======================//
+
 const isProduction = environment === 'production';
+
 const app = express();
+
+// =================MIDDLE WARE START======================//
 
 app.use(morgan('dev'));
 app.use(cookieParser());
@@ -1148,6 +1182,8 @@ app.use(
 );
 
 app.use(routes);
+
+// =================MIDDLE WARE END======================//
 
 app.use((_req, _res, next) => {
     const err: any = new Error("The requested resource couldn't be found.");
@@ -1280,9 +1316,25 @@ import express from 'express';
 
 const router = express.Router();
 
+# TWO TEST ROUTES AND A RESTORE
+
 router.get('/api/test', (req, res) => {
     res.json({ message: 'Success' });
 });
+
+router.get('/hello/world', (req: Request, res: Response) => {
+  res.cookie('XSRF-TOKEN', req.csrfToken());
+  res.send('Hello World!');
+});
+
+router.get('/api/csrf/restore', (req: Request, res: Response) => {
+  const csrfToken = req.csrfToken();
+  res.cookie('XSRF-TOKEN', csrfToken);
+  res.status(200).json({
+    'XSRF-Token': csrfToken,
+  });
+});
+
 
 export default router;
 EOL
