@@ -1,4 +1,5 @@
 #!/bin/bash
+export AWS_PAGER=""
 
 # This script:
 

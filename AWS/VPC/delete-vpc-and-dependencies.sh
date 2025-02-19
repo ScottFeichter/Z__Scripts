@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Because RDS take a long time to delete you may want to open a few terminals and run one vpc at a time in each to get some concurrency going...
+
 # This script:
         # Takes a list of VPC IDs to delete
         # For each VPC:
@@ -10,13 +12,14 @@
                 # Deletes non-default Security Groups
                 # Finally deletes the VPC itself
 
+
+
 export AWS_PAGER=""
 
 # List of VPCs to delete
 VPC_LIST=(
-"vpc-031c7129b81b78219"
-"vpc-09b6566e1098e2b17"
-"vpc-0b725a9c2cbd37681"
+"vpc-02d0de9cebfcca9c9"
+
     # Add more VPC IDs as needed
 )
 
@@ -34,7 +37,64 @@ delete_vpc() {
         return 1
     }
 
-    # Terminate EC2 instances first
+    # Function to wait for RDS instance deletion
+    wait_for_rds_deletion() {
+        local db_identifier=$1
+        local start_time=$(date +%s)
+        echo "Waiting for RDS instance $db_identifier to be deleted..."
+        echo "This could take 5-30 minutes depending on the instance size."
+
+        while aws rds describe-db-instances --db-instance-identifier "$db_identifier" 2>/dev/null; do
+            local current_time=$(date +%s)
+            local elapsed_time=$((current_time - start_time))
+            local minutes=$((elapsed_time / 60))
+            local seconds=$((elapsed_time % 60))
+            echo "Still waiting... Time elapsed: ${minutes}m ${seconds}s"
+            sleep 30
+        done
+
+        local total_time=$(($(date +%s) - start_time))
+        local total_minutes=$((total_time / 60))
+        local total_seconds=$((total_time % 60))
+        echo "RDS instance deleted. Total time: ${total_minutes}m ${total_seconds}s"
+    }
+
+    # Delete RDS instances
+    echo "  Checking for RDS instances..."
+    RDS_INSTANCES=$(aws rds describe-db-instances \
+        --query "DBInstances[?DBSubnetGroup.VpcId=='${vpc_id}'].DBInstanceIdentifier" \
+        --output text)
+
+    if [ ! -z "$RDS_INSTANCES" ] && [ "$RDS_INSTANCES" != "None" ]; then
+        for db in $RDS_INSTANCES; do
+            echo "  Processing RDS instance: $db"
+
+            # Disable deletion protection
+            echo "  Disabling deletion protection for RDS instance: $db"
+            aws rds modify-db-instance \
+                --db-instance-identifier "$db" \
+                --no-deletion-protection \
+                --apply-immediately
+
+            # Wait for the modification to complete
+            echo "  Waiting for modification to complete..."
+            aws rds wait db-instance-available --db-instance-identifier "$db"
+
+            # Delete the instance
+            echo "  Now deleting RDS instance: $db"
+            aws rds delete-db-instance \
+                --db-instance-identifier "$db" \
+                --skip-final-snapshot \
+                --delete-automated-backups
+
+            # Wait for deletion to complete
+            wait_for_rds_deletion "$db"
+        done
+    else
+        echo "  No RDS instances found in VPC"
+    fi
+
+    # Terminate EC2 instances
     echo "  Checking for and terminating EC2 instances..."
     instance_ids=$(aws ec2 describe-instances \
         --filters "Name=vpc-id,Values=$vpc_id" \
@@ -91,6 +151,12 @@ delete_vpc() {
         aws ec2 delete-internet-gateway --internet-gateway-id "$igw_id"
     fi
 
+    # Wait for NAT Gateways to be deleted (they take time)
+    if [ ! -z "$nat_gateway_ids" ]; then
+        echo "Waiting for NAT Gateways to be deleted..."
+        sleep 60  # NAT Gateways take time to delete
+    fi
+
     # Check for and delete Network Interfaces
     echo "  Checking for Network Interfaces..."
     eni_ids=$(aws ec2 describe-network-interfaces \
@@ -138,31 +204,8 @@ delete_vpc() {
     for sg_id in $sg_ids; do
         if [ ! -z "$sg_id" ] && [ "$sg_id" != "None" ]; then
             echo "  Processing Security Group: $sg_id"
-
-            # Check for Lambda functions using this security group
-            echo "    Checking for Lambda functions..."
-            lambda_functions=$(aws lambda list-functions \
-                --query "Functions[?VpcConfig.SecurityGroupIds[?contains(@,'$sg_id')]].FunctionName" \
-                --output text)
-
-            if [ ! -z "$lambda_functions" ] && [ "$lambda_functions" != "None" ]; then
-                echo "    Warning: Security group is used by Lambda functions: $lambda_functions"
-            fi
-
-            # Check for RDS instances using this security group
-            echo "    Checking for RDS instances..."
-            rds_instances=$(aws rds describe-db-instances \
-                --query "DBInstances[?VpcSecurityGroups[?VpcSecurityGroupId=='$sg_id']].DBInstanceIdentifier" \
-                --output text)
-
-            if [ ! -z "$rds_instances" ] && [ "$rds_instances" != "None" ]; then
-                echo "    Warning: Security group is used by RDS instances: $rds_instances"
-            fi
-
-            # Try to delete the security group
-            echo "    Attempting to delete Security Group..."
             aws ec2 delete-security-group --group-id "$sg_id" || \
-            echo "    Warning: Could not delete Security Group"
+            echo "  Warning: Could not delete Security Group"
         fi
     done
 
@@ -235,7 +278,6 @@ delete_vpc() {
 echo "Starting VPC deletion process..."
 echo "Found ${#VPC_LIST[@]} VPCs to process"
 
-# Confirm before proceeding
 read -p "Do you want to proceed with deletion of these VPCs? (y/n): " confirm
 if [[ ! $confirm =~ ^[Yy]$ ]]; then
     echo "Operation cancelled"

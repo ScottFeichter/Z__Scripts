@@ -4,9 +4,9 @@ export AWS_PAGER=""  # Disable the AWS CLI pager
 
 # Array of volume IDs - change them to suit your needs
 VOLUMES=(
-"vol-04b4d7edf709da1d1"
-"vol-05072b61730158d8a"
-"vol-0c43e18aa0715b2a6"
+"vol-0810c9b4080520721"
+"vol-09bb0ddc34cd86b96"
+"vol-0cde7b35b0718387a"
 )
 
 # Function to delete an EBS volume
