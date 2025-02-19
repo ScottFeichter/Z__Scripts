@@ -138,6 +138,10 @@ touch README.md
 git add .
 git commit -m "initial (msg via shell)"
 
+git branch Production
+git branch Staging
+git branch Development
+
 gh repo create "$ADMIN_REPO_NAME" --public
 
 git remote add origin "https://github.com/ScottFeichter/$ADMIN_REPO_NAME.git"
@@ -573,6 +577,10 @@ react front end for $FRONTEND_REPO_NAME
 EOL
 git add .
 git commit -m "initial (msg via shell)"
+
+git branch Production
+git branch Staging
+git branch Development
 
 gh repo create "$FRONTEND_REPO_NAME" --public
 
@@ -1110,6 +1118,10 @@ git init
 touch README.md
 git add .
 git commit -m "initial (msg via shell)"
+
+git branch Production
+git branch Staging
+git branch Development
 
 gh repo create "$BACKEND_REPO_NAME" --public
 
