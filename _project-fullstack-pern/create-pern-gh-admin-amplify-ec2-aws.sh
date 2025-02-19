@@ -1218,7 +1218,7 @@ EOL
 
 
 # Create www file
-cat > bin/www << EOL
+cat > src/bin/www << EOL
 #!/usr/bin/env node
 
 import { port } from '../config';

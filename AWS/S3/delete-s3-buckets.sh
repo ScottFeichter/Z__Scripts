@@ -4,6 +4,8 @@ export AWS_PAGER=""  # Disable the AWS CLI pager so we don't get json output
 
 # Array of bucket names - change them to suit your needs
 BUCKETS=(
+admiend-do-reg-me-02-19-2025-2-20250219153635-12b6b574
+admiend-do-reg-me-02-19-2025-2-20250219154031-7eefc427
 admiend-do-reg-me-02-19-2025-3-20250219152426-eebf2ced
 )
 
