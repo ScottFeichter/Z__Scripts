@@ -260,7 +260,7 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-REPO_NAME=$1
+
 SETUP_CLOUDFRONT=false
 
 # Check for optional CloudFront flag
@@ -723,7 +723,7 @@ cat > src/styles/main.scss << EOL
 EOL
 
 # Create API service
-cat > src/services/api.ts << EOL
+cat > src/services/api.js << EOL
 import axios from 'axios';
 
 const api = axios.create({
@@ -1231,7 +1231,7 @@ EOL
 cat > src/bin/www << EOL
 #!/usr/bin/env node
 
-import { port } from '../config';
+import { port } from '../config/index.js';
 import app from '../app';
 import db from '../db/models';
 
@@ -1253,7 +1253,7 @@ EOL
 chmod +x src/bin/www
 
 # Create config file
-cat > config/index.ts << EOL
+cat > src/config/index.js << EOL
 export default {
     environment: process.env.NODE_ENV || 'development',
     port: process.env.PORT || 5000,
@@ -1271,7 +1271,7 @@ export default {
 EOL
 
 # Create database config file
-cat > config/database.ts << EOL
+cat > src/config/database.js << EOL
 import config from './index';
 
 export default {
@@ -1321,7 +1321,7 @@ import { sequelize } from './db/models';
 EOL
 
 # Create routes index file
-cat > routes/index.ts << EOL
+cat > src/routes/index.ts << EOL
 import express from 'express';
 
 const router = express.Router();
