@@ -643,7 +643,17 @@ npm install \
     formik \
     yup \
     sass \
-    framer-motion
+    framer-motion \
+
+npm install @aws-amplify/ui-react aws-amplify
+npm install @fontsource/inter
+
+echo " "
+echo "Dependency install complete: including AWS Amplify UI..."
+echo "For more information on AWS Amplify UI visit:"
+echo "https://ui.docs.amplify.aws/react/getting-started/installation"
+echo " "
+
 
 # Create project structure
 echo "Creating project structure..."
@@ -1240,7 +1250,7 @@ startServer();
 EOL
 
 # Make www executable
-chmod +x bin/www
+chmod +x src/bin/www
 
 # Create config file
 cat > config/index.ts << EOL
