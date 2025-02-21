@@ -4,9 +4,11 @@ export AWS_PAGER=""  # Disable the AWS CLI pager so we don't get json output
 
 # Array of bucket names - change them to suit your needs
 BUCKETS=(
-admiend-do-reg-me-02-19-2025-2-20250219153635-12b6b574
-admiend-do-reg-me-02-19-2025-2-20250219154031-7eefc427
-admiend-do-reg-me-02-19-2025-3-20250219152426-eebf2ced
+admiend-do-reg-mi-02-19-2025-2-20250219154849-646909fa
+admiend-do-reg-mi-02-19-2025-3-20250219155304-b4333f58
+admiend-do-reg-mi-02-20-2025-2-20250220055647-251870a6
+admiend-do-reg-mi-02-20-2025-3-20250220061238-71b1c748
+admiend-do-reg-mi-02-20-2025-4-20250220062614-ecaff3a1
 )
 
 # Check if jq is installed

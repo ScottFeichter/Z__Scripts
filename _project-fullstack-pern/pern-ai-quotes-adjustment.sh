@@ -17,49 +17,49 @@ fi
 
 
 echo "CREATING ADMIN..."
-ARG=$1
-ADMIN_NAME_ARG=admiend-$1
-FRONTEND_NAME_ARG=frontend-$1
-BACKEND_NAME_ARG=backend-$1
-CREATE_DATE=$(date '+%m-%d-%Y')
+ARG="$1"
+ADMIN_NAME_ARG="admiend-$1"
+FRONTEND_NAME_ARG="frontend-$1"
+BACKEND_NAME_ARG="backend-$1"
+CREATE_DATE="$(date '+%m-%d-%Y')"
 REPO_VERSION=1
+
+
 
 
 # Function to check if repository exists and get latest version
 check_repo_version() {
     local base_name="$ADMIN_NAME_ARG-$CREATE_DATE"
-    local highest_version=0  # Initialize to 0 instead of 1
 
     # Check GitHub repositories
-    local existing_repos=$(gh repo list ScottFeichter --json name --limit 100 | grep -o "\"name\":\"$base_name-[0-9]*\"")
+    local existing_repos="$(gh repo list ScottFeichter --json name --limit 100 | grep -o "\"name\":\"$base_name-[0-9]*\"")"
 
     # Check local directories
-    local existing_dirs=$(ls -d "$base_name"* 2>/dev/null)
+    local existing_dirs="$(ls -d "$base_name"* 2>/dev/null)"
+
+    local highest_version=1
 
     # Check versions from GitHub repos
     if [ -n "$existing_repos" ]; then
-        local gh_version=$(echo "$existing_repos" | grep -o '[0-9]*$' | sort -n | tail -1)
-        if [ -n "$gh_version" ] && [ "$gh_version" -gt "$highest_version" ]; then
-            highest_version=$gh_version
+        local gh_version="$(echo "$existing_repos" | grep -o '[0-9]*$' | sort -n | tail -1)"
+        if [ "$gh_version" -gt "$highest_version" ]; then
+            highest_version="$gh_version"
         fi
     fi
 
     # Check versions from local directories
     if [ -n "$existing_dirs" ]; then
-        local dir_version=$(echo "$existing_dirs" | grep -o "$base_name-[0-9]*$" | grep -o '[0-9]*$' | sort -n | tail -1)
+        local dir_version="$(echo "$existing_dirs" | grep -o "$base_name-[0-9]*$" | grep -o '[0-9]*$' | sort -n | tail -1)"
         if [ -n "$dir_version" ] && [ "$dir_version" -gt "$highest_version" ]; then
-            highest_version=$dir_version
+            highest_version="$dir_version"
         fi
     fi
 
-    # Only increment if we found existing versions
+    # If we found any existing versions, increment the highest one
     if [ "$highest_version" -gt 0 ]; then
         REPO_VERSION=$((highest_version + 1))
-    else
-        REPO_VERSION=1  # Start with version 1 if no existing versions found
     fi
 }
-
 
 # Check for existing repos and update version if needed
 echo "Checking for version..."
@@ -101,75 +101,75 @@ echo "└── wireframes/"
 # Create starter files
 echo "Creating starter files..."
 
-touch api-docs/$ARG-api.md
-touch api-docs/scratch-api.md
+touch "api-docs/$ARG-api.md"
+touch "api-docs/scratch-api.md"
 
-touch draw-io/$ARG-architecture.drawio
+touch "draw-io/$ARG-architecture.drawio"
 
-touch postman/$ARG-backend.postman_collection.json
-touch postman/$ARG-frontend.postman_collection.json
+touch "postman/$ARG-backend.postman_collection.json"
+touch "postman/$ARG-frontend.postman_collection.json"
 
-touch misc/authentication-flow.md
-touch misc/fake-commits.md
+touch "misc/authentication-flow.md"
+touch "misc/fake-commits.md"
 
-touch redux/fetches-thunks.js
-touch redux/reducers.js
+touch "redux/fetches-thunks.js"
+touch "redux/reducers.js"
 
-touch requirements/$ARG-frontend-requirements.txt
-touch requirements/$ARG-backend-requirements.txt
+touch "requirements/$ARG-frontend-requirements.txt"
+touch "requirements/$ARG-backend-requirements.txt"
     echo "LIST SUBJECT TO CHANGE - CHECK PROD ENV FOR MOST CURRENT"
-    echo "npm init -y"          >> $ARG-backend-requirements.txt
-	echo "" 					>> $ARG-backend-requirements.txt
-	echo "# npm install for:" 	>> $ARG-backend-requirements.txt
-	echo cookie-parser 			>> $ARG-backend-requirements.txt;
-	echo cors 				    >> $ARG-backend-requirements.txt;
-	echo csurf 					>> $ARG-backend-requirements.txt;
-	echo dotenv 				>> $ARG-backend-requirements.txt;
-	echo express 				>> $ARG-backend-requirements.txt;
-	echo express-async-errors 	>> $ARG-backend-requirements.txt;
-	echo helmet 				>> $ARG-backend-requirements.txt;
-	echo jsonwebtoken 			>> $ARG-backend-requirements.txt;
-	echo morgan 				>> $ARG-backend-requirements.txt;
-	echo per-env 				>> $ARG-backend-requirements.txt;
-	echo sequelize@6 			>> $ARG-backend-requirements.txt;
-	echo sequelize-cli@6 		>> $ARG-backend-requirements.txt;
-	echo pg						>> $ARG-backend-requirements.txt;
-	echo "" 					>> $ARG-backend-requirements.txt;
+    echo "npm init -y"          >> "requirements/$ARG-backend-requirements.txt"
+    echo "" 					   >> "requirements/$ARG-backend-requirements.txt"
+    echo "# npm install for:"   >> "requirements/$ARG-backend-requirements.txt"
+    echo "cookie-parser" 	   >> "requirements/$ARG-backend-requirements.txt"
+    echo "cors" 				   >> "requirements/$ARG-backend-requirements.txt"
+    echo "csurf" 			   >> "requirements/$ARG-backend-requirements.txt"
+    echo "dotenv" 			   >> "requirements/$ARG-backend-requirements.txt"
+    echo "express" 			   >> "requirements/$ARG-backend-requirements.txt"
+    echo "express-async-errors" >> "requirements/$ARG-backend-requirements.txt"
+    echo "helmet" 			   >> "requirements/$ARG-backend-requirements.txt"
+    echo "jsonwebtoken" 		   >> "requirements/$ARG-backend-requirements.txt"
+    echo "morgan" 			   >> "requirements/$ARG-backend-requirements.txt"
+    echo "per-env" 			   >> "requirements/$ARG-backend-requirements.txt"
+    echo "sequelize@6" 		   >> "requirements/$ARG-backend-requirements.txt"
+    echo "sequelize-cli@6" 	   >> "requirements/$ARG-backend-requirements.txt"
+    echo "pg"				   >> "requirements/$ARG-backend-requirements.txt"
+    echo "" 				       >> "requirements/$ARG-backend-requirements.txt"
 
-	echo "#npm install -D for:" >> $ARG-backend-requirements.txt;
-	echo sqlite3 				>> $ARG-backend-requirements.txt;
-	echo dotenv-cli				>> $ARG-backend-requirements.txt;
-	echo nodemon				>> $ARG-backend-requirements.txt;
-	wait;
-
-
+    echo "#npm install -D for:" >> "requirements/$ARG-backend-requirements.txt"
+    echo "sqlite3" 			   >> "requirements/$ARG-backend-requirements.txt"
+    echo "dotenv-cli"		   >> "requirements/$ARG-backend-requirements.txt"
+    echo "nodemon"			   >> "requirements/$ARG-backend-requirements.txt"
+    wait;
 
 
 
 
-touch schema/$ARG-schema.png
 
-touch sequelize/seeders.js
-touch sequelize/commands.md
-touch sequelize/migrations.js
 
-touch README.md
-	echo "# [$ADMIN_REPO_NAME]">> README.md;
-	echo "! [db-schema ]">> README.md;
-	echo "[db-schema]: ./schema/[$ARG]-schema.png">> README.md
+touch "schema/$ARG-schema.png"
+
+touch "sequelize/seeders.js"
+touch "sequelize/commands.md"
+touch "sequelize/migrations.js"
+
+touch "README.md"
+    echo "# [$ADMIN_REPO_NAME]" >> "README.md"
+    echo "! [db-schema ]" >> "README.md"
+    echo "[db-schema]: ./schema/[$ARG]-schema.png" >> "README.md"
 
 
 
 # Initialize repository local and remote and push
 echo "Initializing admin git local w github remote and pushing..."
 git init
-touch README.md
+touch "README.md"
 git add .
 git commit -m "initial (msg via shell)"
 
-git branch Production
-git branch Staging
-git branch Development
+git branch "Production"
+git branch "Staging"
+git branch "Development"
 
 gh repo create "$ADMIN_REPO_NAME" --public
 
@@ -272,25 +272,25 @@ fi
 
 
 # Generate bucket name with timestamp and random string
-TIMESTAMP=$(date +%Y%m%d%H%M%S)
-RANDOM_STRING=$(openssl rand -hex 4)
+TIMESTAMP="$(date +%Y%m%d%H%M%S)"
+RANDOM_STRING="$(openssl rand -hex 4)"
 BUCKET_NAME="${ADMIN_REPO_NAME}-${TIMESTAMP}-${RANDOM_STRING}"
 
 # Convert bucket name to lowercase (S3 requirement)
-BUCKET_NAME=$(echo "$BUCKET_NAME" | tr '[:upper:]' '[:lower:]')
+BUCKET_NAME="$(echo "$BUCKET_NAME" | tr '[:upper:]' '[:lower:]')"
 
 # Remove any invalid characters (S3 only allows lowercase letters, numbers, dots, and hyphens)
-BUCKET_NAME=$(echo "$BUCKET_NAME" | sed 's/[^a-z0-9.-]/-/g')
+BUCKET_NAME="$(echo "$BUCKET_NAME" | sed 's/[^a-z0-9.-]/-/g')"
 
 
 # Check if AWS CLI is installed
-if ! command -v aws &> /dev/null; then
+if ! command -v aws &> "/dev/null"; then
     echo "AWS CLI is not installed. Please install it first."
     exit 1
 fi
 
 # Check if user is authenticated with AWS
-if ! aws sts get-caller-identity &> /dev/null; then
+if ! aws sts get-caller-identity &> "/dev/null"; then
     echo "Not authenticated with AWS. Please configure AWS CLI first."
     exit 1
 fi
@@ -302,13 +302,13 @@ echo ""
 echo "Creating S3 bucket: $BUCKET_NAME"
 if aws s3api create-bucket \
     --bucket "$BUCKET_NAME" \
-    --region us-east-1; then
+    --region "us-east-1"; then
 
     # Enable versioning on the bucket
     echo "Enabling versioning on bucket"
     aws s3api put-bucket-versioning \
         --bucket "$BUCKET_NAME" \
-        --versioning-configuration Status=Enabled
+        --versioning-configuration "Status=Enabled"
 
     # Add default encryption
     echo "Enabling default encryption"
@@ -370,77 +370,77 @@ if aws s3api create-bucket \
 
         # Create Origin Access Control (OAC)
         OAC_NAME="${BUCKET_NAME}-oac"
-        OAC_CONFIG='{
-            "Name": "'${OAC_NAME}'",
-            "Description": "OAC for '${BUCKET_NAME}'",
-            "SigningProtocol": "sigv4",
-            "SigningBehavior": "always",
-            "OriginAccessControlOriginType": "s3"
-        }'
+        OAC_CONFIG="{
+            \"Name\": \"${OAC_NAME}\",
+            \"Description\": \"OAC for ${BUCKET_NAME}\",
+            \"SigningProtocol\": \"sigv4\",
+            \"SigningBehavior\": \"always\",
+            \"OriginAccessControlOriginType\": \"s3\"
+        }"
 
-        OAC_ID=$(aws cloudfront create-origin-access-control --origin-access-control-config "$OAC_CONFIG" --query 'OriginAccessControl.Id' --output text)
+        OAC_ID="$(aws cloudfront create-origin-access-control --origin-access-control-config "$OAC_CONFIG" --query 'OriginAccessControl.Id' --output text)"
 
         # Create CloudFront distribution
-        DISTRIBUTION_CONFIG='{
-            "Comment": "Distribution for '${BUCKET_NAME}'",
-            "Origins": {
-                "Quantity": 1,
-                "Items": [
+        DISTRIBUTION_CONFIG="{
+            \"Comment\": \"Distribution for ${BUCKET_NAME}\",
+            \"Origins\": {
+                \"Quantity\": 1,
+                \"Items\": [
                     {
-                        "Id": "S3Origin",
-                        "DomainName": "'${BUCKET_NAME}'.s3.amazonaws.com",
-                        "S3OriginConfig": {
-                            "OriginAccessIdentity": ""
+                        \"Id\": \"S3Origin\",
+                        \"DomainName\": \"${BUCKET_NAME}.s3.amazonaws.com\",
+                        \"S3OriginConfig\": {
+                            \"OriginAccessIdentity\": \"\"
                         },
-                        "OriginAccessControlId": "'${OAC_ID}'"
+                        \"OriginAccessControlId\": \"${OAC_ID}\"
                     }
                 ]
             },
-            "DefaultCacheBehavior": {
-                "TargetOriginId": "S3Origin",
-                "ViewerProtocolPolicy": "redirect-to-https",
-                "AllowedMethods": {
-                    "Quantity": 2,
-                    "Items": ["GET", "HEAD"],
-                    "CachedMethods": {
-                        "Quantity": 2,
-                        "Items": ["GET", "HEAD"]
+            \"DefaultCacheBehavior\": {
+                \"TargetOriginId\": \"S3Origin\",
+                \"ViewerProtocolPolicy\": \"redirect-to-https\",
+                \"AllowedMethods\": {
+                    \"Quantity\": 2,
+                    \"Items\": [\"GET\", \"HEAD\"],
+                    \"CachedMethods\": {
+                        \"Quantity\": 2,
+                        \"Items\": [\"GET\", \"HEAD\"]
                     }
                 },
-                "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
-                "Compress": true
+                \"CachePolicyId\": \"658327ea-f89d-4fab-a63d-7e88639e58f6\",
+                \"Compress\": true
             },
-            "Enabled": true,
-            "DefaultRootObject": "index.html",
-            "PriceClass": "PriceClass_100"
-        }'
+            \"Enabled\": true,
+            \"DefaultRootObject\": \"index.html\",
+            \"PriceClass\": \"PriceClass_100\"
+        }"
 
         # Create the distribution
-        DISTRIBUTION_ID=$(aws cloudfront create-distribution \
+        DISTRIBUTION_ID="$(aws cloudfront create-distribution \
             --distribution-config "$DISTRIBUTION_CONFIG" \
             --query 'Distribution.Id' \
-            --output text)
+            --output text)"
 
         # Create bucket policy for CloudFront access
-        BUCKET_POLICY='{
-            "Version": "2012-10-17",
-            "Statement": [
+        BUCKET_POLICY="{
+            \"Version\": \"2012-10-17\",
+            \"Statement\": [
                 {
-                    "Sid": "AllowCloudFrontServicePrincipal",
-                    "Effect": "Allow",
-                    "Principal": {
-                        "Service": "cloudfront.amazonaws.com"
+                    \"Sid\": \"AllowCloudFrontServicePrincipal\",
+                    \"Effect\": \"Allow\",
+                    \"Principal\": {
+                        \"Service\": \"cloudfront.amazonaws.com\"
                     },
-                    "Action": "s3:GetObject",
-                    "Resource": "arn:aws:s3:::'${BUCKET_NAME}'/*",
-                    "Condition": {
-                        "StringEquals": {
-                            "AWS:SourceArn": "arn:aws:cloudfront::'$(aws sts get-caller-identity --query Account --output text)':distribution/'${DISTRIBUTION_ID}'"
+                    \"Action\": \"s3:GetObject\",
+                    \"Resource\": \"arn:aws:s3:::${BUCKET_NAME}/*\",
+                    \"Condition\": {
+                        \"StringEquals\": {
+                            \"AWS:SourceArn\": \"arn:aws:cloudfront::$(aws sts get-caller-identity --query Account --output text):distribution/${DISTRIBUTION_ID}\"
                         }
                     }
                 }
             ]
-        }'
+        }"
 
         # Apply the bucket policy
         aws s3api put-bucket-policy --bucket "$BUCKET_NAME" --policy "$BUCKET_POLICY"
@@ -489,7 +489,7 @@ fi
 
 # Check if we're in a Git repository
 echo "Checking if Git repo..."
-if [ ! -d .git ]; then
+if [ ! -d ".git" ]; then
     echo "Error: Not a Git repository. Please run this script from the root of your Git repository."
     exit 1
 fi
@@ -497,18 +497,18 @@ fi
 
 
 # Create hooks directory if it doesn't exist
-mkdir -p .git/hooks
+mkdir -p ".git/hooks"
 
 # Create post-push hook
 echo "Creating pre-push hook..."
-cat > .git/hooks/pre-push << EOL
+cat > ".git/hooks/pre-push" << 'EOL'
 #!/bin/bash
 
 # Log start of sync
 echo "Starting sync to S3 bucket: ${BUCKET_NAME}"
 
 # Sync to S3, excluding unnecessary files
-aws s3 sync . s3://${BUCKET_NAME} \
+aws s3 sync . "s3://${BUCKET_NAME}" \
     --exclude ".git/*" \
     --exclude "node_modules/*" \
     --exclude ".env" \
@@ -516,7 +516,7 @@ aws s3 sync . s3://${BUCKET_NAME} \
     --exclude "*.log"
 
 # Check if sync was successful
-if [ \$? -eq 0 ]; then
+if [ $? -eq 0 ]; then
     echo "Successfully synced to S3 bucket: ${BUCKET_NAME}"
 else
     echo "Failed to sync to S3 bucket: ${BUCKET_NAME}"
@@ -525,14 +525,14 @@ fi
 
 # Optional: List recently modified files in S3
 echo "Recently modified files in S3:"
-aws s3 ls s3://${BUCKET_NAME} --recursive --human-readable --summarize | tail -n 5
+aws s3 ls "s3://${BUCKET_NAME}" --recursive --human-readable --summarize | tail -n 5
 EOL
 
 # Make the hook executable
-chmod +x .git/hooks/pre-push
+chmod +x ".git/hooks/pre-push"
 
 # Verify the hook was created
-if [ -x .git/hooks/pre-push ]; then
+if [ -x ".git/hooks/pre-push" ]; then
     echo "Successfully created and configured pre-push hook"
     echo "Hook location: .git/hooks/pre-push"
     echo "The hook will sync to S3 bucket: ${BUCKET_NAME}"
@@ -542,19 +542,19 @@ else
 fi
 
 # Check AWS CLI is installed and configured
-if ! command -v aws &> /dev/null; then
+if ! command -v aws &> "/dev/null"; then
     echo "Warning: AWS CLI is not installed. Please install it to use the S3 sync feature."
     exit 1
 fi
 
 # Test AWS credentials
-if ! aws sts get-caller-identity &> /dev/null; then
+if ! aws sts get-caller-identity &> "/dev/null"; then
     echo "Warning: AWS credentials not configured. Please run 'aws configure' to set up your credentials."
     exit 1
 fi
 
 # Verify S3 bucket exists
-if ! aws s3 ls "s3://${BUCKET_NAME}" &> /dev/null; then
+if ! aws s3 ls "s3://${BUCKET_NAME}" &> "/dev/null"; then
     echo "Warning: S3 bucket '${BUCKET_NAME}' does not exist or you don't have access to it."
     echo "Please verify the bucket name and your AWS credentials."
     exit 1
@@ -594,22 +594,22 @@ FRONTEND_REPO_NAME="$FRONTEND_NAME_ARG-$CREATE_DATE-$REPO_VERSION"
 
 # Initialize project with Vite
 echo "Creating React w Vite project: $FRONTEND_REPO_NAME..."
-npm create vite@latest $FRONTEND_REPO_NAME -- --template react -- --skip-git
+npm create vite@latest "$FRONTEND_REPO_NAME" -- --template react -- --skip-git
 
-cd $FRONTEND_REPO_NAME
+cd "$FRONTEND_REPO_NAME"
 
 # Initialize repository
 echo "Initializing git local and remote..."
 git init
-cat > README.md << EOL
+cat > "README.md" << EOL
 react front end for $FRONTEND_REPO_NAME
 EOL
 git add .
 git commit -m "initial (msg via shell)"
 
-git branch Production
-git branch Staging
-git branch Development
+git branch "Production"
+git branch "Staging"
+git branch "Development"
 
 gh repo create "$FRONTEND_REPO_NAME" --public
 
@@ -658,15 +658,15 @@ echo " "
 # Create project structure
 echo "Creating project structure..."
 mkdir -p \
-    src/components \
-    src/pages \
-    src/features \
-    src/services \
-    src/hooks \
-    src/utils \
-    src/assets \
-    src/styles \
-    src/store
+    "src/components" \
+    "src/pages" \
+    "src/features" \
+    "src/services" \
+    "src/hooks" \
+    "src/utils" \
+    "src/assets" \
+    "src/styles" \
+    "src/store"
 
 
 
@@ -675,7 +675,7 @@ mkdir -p \
 echo "Creating basic files..."
 
 # Create store setup
-cat > src/store/counterSlice.ts << EOL
+cat > "src/store/counterSlice.ts" << 'EOL'
 import { createSlice } from '@reduxjs/toolkit';
 
 interface CounterState {
@@ -703,7 +703,7 @@ export const { increment, decrement } = counterSlice.actions;
 export default counterSlice.reducer;
 EOL
 
-cat > src/store/index.ts << EOL
+cat > "src/store/index.ts" << 'EOL'
 import { configureStore } from '@reduxjs/toolkit';
 import counterReducer from './counterSlice';
 
@@ -718,12 +718,12 @@ export type AppDispatch = typeof store.dispatch;
 EOL
 
 # Create main style file
-cat > src/styles/main.scss << EOL
+cat > "src/styles/main.scss" << 'EOL'
 /* Styles remain unchanged */
 EOL
 
 # Create API service
-cat > src/services/api.js << EOL
+cat > "src/services/api.js" << 'EOL'
 import axios from 'axios';
 
 const api = axios.create({
@@ -742,7 +742,7 @@ export default api;
 EOL
 
 # Create sample component
-cat > src/components/Layout.tsx << EOL
+cat > "src/components/Layout.tsx" << 'EOL'
 import { Outlet } from 'react-router-dom';
 
 const Layout = () => {
@@ -765,7 +765,7 @@ export default Layout;
 EOL
 
 # Create HomePage component
-cat > src/pages/HomePage.tsx << EOL
+cat > "src/pages/HomePage.tsx" << 'EOL'
 import { motion } from 'framer-motion';
 import { useSelector, useDispatch } from 'react-redux';
 import { increment, decrement } from '../store/counterSlice';
@@ -781,7 +781,7 @@ const HomePage = () => {
     <div style={{ textAlign: 'center', padding: '2rem', marginTop: '30vh' }}>
       <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginBottom: '2rem' }}>
         <motion.div animate={{ rotateY: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }}>
-          <img src={viteLogo} alt="Vite logo" style={{ height: '8rem' }} />
+          <img src={viteLogo} alt="Vite logo" style={{ height: '8rem' }} >
         </motion.div>
         <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }}>
           <img src={reactLogo} alt="React logo" style={{ height: '8rem' }} />
@@ -800,7 +800,7 @@ export default HomePage;
 EOL
 
 # Create router setup
-cat > src/router.tsx << EOL
+cat > "src/router.tsx" << 'EOL'
 import { createBrowserRouter } from 'react-router-dom';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
@@ -820,7 +820,7 @@ export const router = createBrowserRouter([
 EOL
 
 # Update main.tsx
-cat > src/main.tsx << EOL
+cat > "src/main.tsx" << 'EOL'
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
@@ -839,17 +839,17 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 EOL
 
 # Update .gitignore
-cat >> .gitignore << EOL
+cat >> ".gitignore" << 'EOL'
 # TypeScript build output
 dist/
 EOL
 
 # Update package.json scripts
-npm pkg set scripts.dev="vite"
-npm pkg set scripts.build="vite build"
-npm pkg set scripts.preview="vite preview"
-npm pkg set scripts.lint="eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
-npm pkg set scripts.format="prettier --write 'src/**/*.{ts,tsx,css,scss}'"
+npm pkg set "scripts.dev=vite"
+npm pkg set "scripts.build=vite build"
+npm pkg set "scripts.preview=vite preview"
+npm pkg set "scripts.lint=eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+npm pkg set "scripts.format=prettier --write 'src/**/*.{ts,tsx,css,scss}'"
 
 
 
@@ -871,7 +871,7 @@ Project structure:
 └── ...
 
 To get started:
-1. cd $FRONTEND_REPO_NAME
+1. cd \"$FRONTEND_REPO_NAME\"
 2. npm run dev
 
 Happy coding! 🎉"
@@ -891,7 +891,7 @@ Happy coding! 🎉"
 
 
 
-    if ! command -v gh &> /dev/null; then
+    if ! command -v gh &> "/dev/null"; then
         echo "GitHub CLI (gh) is not installed. Please install it first."
         echo "Visit: https://cli.github.com/ for installation instructions"
         exit 1
@@ -899,23 +899,23 @@ Happy coding! 🎉"
 
 
     # Check if user is authenticated
-    if ! gh auth status &> /dev/null; then
+    if ! gh auth status &> "/dev/null"; then
         echo "Not logged in to GitHub. Please run 'gh auth login' first"
         exit 1
     fi
 
     # Check if repository exists
-    if ! gh repo view "ScottFeichter/$FRONTEND_REPO_NAME" &> /dev/null; then
+    if ! gh repo view "ScottFeichter/$FRONTEND_REPO_NAME" &> "/dev/null"; then
         echo "Repository not found: ScottFeichter/$FRONTEND_REPO_NAME"
         exit 1
     fi
 
     # Get repository URL
-    FRONTEND_REPO_URL=$(gh repo view "ScottFeichter/$FRONTEND_REPO_NAME" --json url -q .url)
+    FRONTEND_REPO_URL="$(gh repo view "ScottFeichter/$FRONTEND_REPO_NAME" --json url -q .url)"
 
     # Get authentication token
     # Note: This gets the token used by gh cli
-    TOKEN=$(gh auth token)
+    TOKEN="$(gh auth token)"
 
     # Print results
     echo " "
@@ -952,13 +952,13 @@ echo "Starting Amplify deployment process..."
 
 # Create a new Amplify app connected to GitHub
 echo "Creating Amplify app..."
-APP_ID=$(aws amplify create-app \
+APP_ID="$(aws amplify create-app \
     --name "${FRONTEND_REPO_NAME}" \
     --repository "${FRONTEND_REPO_URL}" \
     --oauth-token "${TOKEN}" \
     --access-token "${TOKEN}" \
     --query 'app.appId' \
-    --output text)
+    --output text)"
 
 
 if [ -z "$APP_ID" ]; then
@@ -978,22 +978,22 @@ DEPLOY_TIMEOUT=300  # 5 minute timeout
 ELAPSED=0
 INTERVAL=10  # Check every 10 seconds
 
-while [ $ELAPSED -lt $DEPLOY_TIMEOUT ]; do
+while [ "$ELAPSED" -lt "$DEPLOY_TIMEOUT" ]; do
     # Get the active job ID
-    ACTIVE_JOB_ID=$(aws amplify get-branch \
+    ACTIVE_JOB_ID="$(aws amplify get-branch \
         --app-id "${APP_ID}" \
         --branch-name "main" \
         --query 'branch.activeJobId' \
-        --output text)
+        --output text)"
 
     if [ "$ACTIVE_JOB_ID" != "None" ]; then
         # Get the status of the active job
-        JOB_STATUS=$(aws amplify get-job \
+        JOB_STATUS="$(aws amplify get-job \
             --app-id "${APP_ID}" \
             --branch-name "main" \
             --job-id "${ACTIVE_JOB_ID}" \
             --query 'job.summary.status' \
-            --output text)
+            --output text)"
 
         if [ "$JOB_STATUS" = "SUCCEED" ]; then
             echo "Deployment completed successfully!"
@@ -1003,17 +1003,17 @@ while [ $ELAPSED -lt $DEPLOY_TIMEOUT ]; do
             exit 1
         else
             echo "  Deployment status: ${JOB_STATUS}... Timeout after: ${DEPLOY_TIMEOUT}s... Time elapsed: ${ELAPSED}s..."
-            sleep $INTERVAL
+            sleep "$INTERVAL"
             ELAPSED=$((ELAPSED + INTERVAL))
         fi
     else
         echo "Waiting for deployment to start..."
-        sleep $INTERVAL
+        sleep "$INTERVAL"
         ELAPSED=$((ELAPSED + INTERVAL))
     fi
 done
 
-if [ $ELAPSED -ge $DEPLOY_TIMEOUT ]; then
+if [ "$ELAPSED" -ge "$DEPLOY_TIMEOUT" ]; then
     echo "  Deployment verification timed out after ${DEPLOY_TIMEOUT} seconds"
     echo "Please check the AWS Amplify Console for deployment status..."
 fi
@@ -1022,7 +1022,7 @@ fi
 echo " "
 echo "------------------------------------- "
 echo "Getting app information..."
-FULL_URL=$(aws amplify get-app --app-id "${APP_ID}" --query 'app.defaultDomain' --output text)
+FULL_URL="$(aws amplify get-app --app-id "${APP_ID}" --query 'app.defaultDomain' --output text)"
 FULL_URL="https://main.${FULL_URL}"
 echo "App ID: ${APP_ID}"
 echo "App URL: ${FULL_URL}"
@@ -1056,13 +1056,13 @@ mkdir "$BACKEND_REPO_NAME"
 cd "$BACKEND_REPO_NAME"
 
 git init
-touch README.md
+touch "README.md"
 git add .
 git commit -m "initial (msg via shell)"
 
-git branch Production
-git branch Staging
-git branch Development
+git branch "Production"
+git branch "Staging"
+git branch "Development"
 
 gh repo create "$BACKEND_REPO_NAME" --public
 
@@ -1114,9 +1114,9 @@ npm install --save-dev \
     typescript
 
 # Update package.json with scripts and dependencies
-cat > package.json << EOL
+cat > "package.json" << EOL
 {
-  "name": "\${BACKEND_REPO_NAME}",
+  "name": "${BACKEND_REPO_NAME}",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -1136,10 +1136,10 @@ cat > package.json << EOL
 EOL
 
 # Create directory structure
-mkdir -p src/bin src/config src/db/migrations src/db/models src/db/seeders src/routes src/utils dist
+mkdir -p "src/bin" "src/config" "src/db/migrations" "src/db/models" "src/db/seeders" "src/routes" "src/utils" "dist"
 
 # Create tsconfig.json
-cat > tsconfig.json << EOL
+cat > "tsconfig.json" << 'EOL'
 {
   "compilerOptions": {
     "target": "ES6",
@@ -1153,7 +1153,7 @@ cat > tsconfig.json << EOL
 EOL
 
 # Create main application file
-cat > src/app.ts << EOL
+cat > "src/app.ts" << 'EOL'
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
@@ -1228,7 +1228,7 @@ EOL
 
 
 # Create www file
-cat > src/bin/www << EOL
+cat > "src/bin/www" << 'EOL'
 #!/usr/bin/env node
 
 import { port } from '../config/index.js';
@@ -1250,10 +1250,10 @@ startServer();
 EOL
 
 # Make www executable
-chmod +x src/bin/www
+chmod +x "src/bin/www"
 
 # Create config file
-cat > src/config/index.js << EOL
+cat > "src/config/index.js" << 'EOL'
 export default {
     environment: process.env.NODE_ENV || 'development',
     port: process.env.PORT || 5000,
@@ -1271,7 +1271,7 @@ export default {
 EOL
 
 # Create database config file
-cat > src/config/database.js << EOL
+cat > "src/config/database.js" << 'EOL'
 import config from './index';
 
 export default {
@@ -1299,29 +1299,29 @@ EOL
 # Function to generate a secure password
 generate_secure_password() {
     # Generate base password components
-    local uppers=$(openssl rand -base64 32 | tr -dc 'A-Z' | head -c 5)
-    local lowers=$(openssl rand -base64 32 | tr -dc 'a-z' | head -c 5)
-    local numbers=$(openssl rand -base64 32 | tr -dc '0-9' | head -c 5)
-    local specials=$(openssl rand -base64 32 | tr -dc '!@#$%^&()_+{}[]:<>?.' | head -c 5)
+    local uppers="$(openssl rand -base64 32 | tr -dc 'A-Z' | head -c 5)"
+    local lowers="$(openssl rand -base64 32 | tr -dc 'a-z' | head -c 5)"
+    local numbers="$(openssl rand -base64 32 | tr -dc '0-9' | head -c 5)"
+    local specials="$(openssl rand -base64 32 | tr -dc '!@#$%^&()_+{}[]:<>?.' | head -c 5)"
 
     # Combine all components
     local password="${uppers}${lowers}${numbers}${specials}"
 
     # Shuffle the password
     # Using fold and shuf to properly shuffle the string
-    password=$(echo "$password" | fold -w1 | shuf | tr -d '\n')
+    password="$(echo "$password" | fold -w1 | shuf | tr -d '\n')"
 
     # Return exactly 20 characters
     echo "${password:0:20}"
 }
 
 # Generate secure password
-SECURE_DB_PASSWORD_BASE=$(generate_secure_password)
-SECURE_DB_PASSWORD=$SECURE_DB_PASSWORD_BASE
+SECURE_DB_PASSWORD_BASE="$(generate_secure_password)"
+SECURE_DB_PASSWORD="$SECURE_DB_PASSWORD_BASE"
 
 
 # Create .env file with secure password
-cat > .env << EOL
+cat > ".env" << EOL
 PORT=5000
 DB_USERNAME=postgres
 DB_PASSWORD=${SECURE_DB_PASSWORD}
@@ -1335,7 +1335,7 @@ echo "Created .env file with secure database password"
 
 
 # Create .sequelizerc file
-cat > .sequelizerc << EOL
+cat > ".sequelizerc" << 'EOL'
 const path = require('path');
 
 module.exports = {
@@ -1347,7 +1347,7 @@ module.exports = {
 EOL
 
 # Create psql setup script
-cat > psql-setup-script.ts << EOL
+cat > "psql-setup-script.ts" << 'EOL'
 import { sequelize } from './db/models';
 
 (async () => {
@@ -1359,7 +1359,7 @@ import { sequelize } from './db/models';
 EOL
 
 # Create routes index file
-cat > src/routes/index.ts << EOL
+cat > "src/routes/index.ts" << 'EOL'
 import express from 'express';
 
 const router = express.Router();
@@ -1388,7 +1388,7 @@ export default router;
 EOL
 
 # Create .gitignore
-cat > .gitignore << EOL
+cat > ".gitignore" << 'EOL'
 node_modules
 .env
 .DS_Store
@@ -1403,7 +1403,7 @@ npx sequelize-cli init || true
 # Create buildspec.yml for AWS CodeBuild
 echo " "
 echo "Creating buildspec.yml for AWS CodeBuild"
-cat > buildspec.yml << EOL
+cat > "buildspec.yml" << 'EOL'
 version: 0.2
 
 phases:
@@ -1493,11 +1493,11 @@ VPC_CIDR="10.0.0.0/16"
 REGION="us-east-1"  # Change this to your desired region
 
 echo "Creating VPC..."
-VPC_ID=$(aws ec2 create-vpc \
-  --cidr-block $VPC_CIDR \
-  --region $REGION \
+VPC_ID="$(aws ec2 create-vpc \
+  --cidr-block "$VPC_CIDR" \
+  --region "$REGION" \
   --output text \
-  --query 'Vpc.VpcId')
+  --query 'Vpc.VpcId')"
 
 if [ -z "$VPC_ID" ]; then
     echo "VPC creation failed"
@@ -1506,26 +1506,26 @@ fi
 
 # Add Name tag to VPC
 aws ec2 create-tags \
-  --resources $VPC_ID \
-  --tags Key=Name,Value=$VPC_NAME
+  --resources "$VPC_ID" \
+  --tags "Key=Name,Value=$VPC_NAME"
 
 # Enable DNS hostname support for the VPC
 aws ec2 modify-vpc-attribute \
-  --vpc-id $VPC_ID \
+  --vpc-id "$VPC_ID" \
   --enable-dns-hostnames "{\"Value\":true}"
 
 # Enable DNS support for the VPC
 aws ec2 modify-vpc-attribute \
-  --vpc-id $VPC_ID \
+  --vpc-id "$VPC_ID" \
   --enable-dns-support "{\"Value\":true}"
 
 echo "VPC created with ID: $VPC_ID"
 
 # Create Internet Gateway
 echo "Creating Internet Gateway..."
-IGW_ID=$(aws ec2 create-internet-gateway \
+IGW_ID="$(aws ec2 create-internet-gateway \
   --output text \
-  --query 'InternetGateway.InternetGatewayId')
+  --query 'InternetGateway.InternetGatewayId')"
 
 if [ -z "$IGW_ID" ]; then
     echo "Internet Gateway creation failed"
@@ -1534,18 +1534,18 @@ fi
 
 # Add Name tag to Internet Gateway
 aws ec2 create-tags \
-  --resources $IGW_ID \
-  --tags Key=Name,Value="${VPC_NAME}-IGW"
+  --resources "$IGW_ID" \
+  --tags "Key=Name,Value=${VPC_NAME}-IGW"
 
 echo "Internet Gateway created with ID: $IGW_ID"
 
 # Attach Internet Gateway to VPC
 echo "Attaching Internet Gateway to VPC..."
 aws ec2 attach-internet-gateway \
-  --vpc-id $VPC_ID \
-  --internet-gateway-id $IGW_ID
+  --vpc-id "$VPC_ID" \
+  --internet-gateway-id "$IGW_ID"
 
-if [ $? -eq 0 ]; then
+if [ "$?" -eq 0 ]; then
     echo "Internet Gateway successfully attached to VPC"
 else
     echo "Failed to attach Internet Gateway to VPC"
@@ -1599,13 +1599,13 @@ echo "Internet Gateway ID: $IGW_ID"
 
 # Set initial variables
 
-REGION=$(aws configure get region)  # Get region from AWS CLI configuration
+REGION="$(aws configure get region)"  # Get region from AWS CLI configuration
 
 # Verify VPC exists and get VPC CIDR
-if ! VPC_CIDR=$(aws ec2 describe-vpcs \
-    --vpc-ids $VPC_ID \
+if ! VPC_CIDR="$(aws ec2 describe-vpcs \
+    --vpc-ids "$VPC_ID" \
     --query 'Vpcs[0].CidrBlock' \
-    --output text 2>/dev/null); then
+    --output text 2>"/dev/null")"; then
     echo "Error: VPC $VPC_ID not found"
     exit 1
 fi
@@ -1614,19 +1614,19 @@ echo "Using VPC: $VPC_ID with CIDR: $VPC_CIDR"
 
 # Calculate subnet CIDRs based on VPC CIDR
 # Example: If VPC is 10.0.0.0/16, create /24 subnets
-VPC_PREFIX=$(echo $VPC_CIDR | cut -d'.' -f1,2)  # Get first two octets (e.g., 10.0)
+VPC_PREFIX="$(echo "$VPC_CIDR" | cut -d'.' -f1,2)"  # Get first two octets (e.g., 10.0)
 PUBLIC_CIDR="${VPC_PREFIX}.1.0/24"    # 10.0.1.0/24
 PRIVATE_CIDR_1="${VPC_PREFIX}.2.0/24" # 10.0.2.0/24
 PRIVATE_CIDR_2="${VPC_PREFIX}.3.0/24" # 10.0.3.0/24
 
 # Get available AZs in the region and select first two
-AVAILABLE_AZS=$(aws ec2 describe-availability-zones \
+AVAILABLE_AZS="$(aws ec2 describe-availability-zones \
     --filters "Name=state,Values=available" \
     --query 'AvailabilityZones[].ZoneName' \
-    --output text)
+    --output text)"
 
-AZ1=$(echo $AVAILABLE_AZS | cut -d' ' -f1)
-AZ2=$(echo $AVAILABLE_AZS | cut -d' ' -f2)
+AZ1="$(echo "$AVAILABLE_AZS" | cut -d' ' -f1)"
+AZ2="$(echo "$AVAILABLE_AZS" | cut -d' ' -f2)"
 
 # Verify we have enough AZs
 if [ -z "$AZ1" ] || [ -z "$AZ2" ]; then
@@ -1649,10 +1649,10 @@ echo "Availability Zone 2: $AZ2"
 echo "----------------------------------------"
 
 # Verify subnet CIDRs don't already exist in VPC
-EXISTING_CIDRS=$(aws ec2 describe-subnets \
+EXISTING_CIDRS="$(aws ec2 describe-subnets \
     --filters "Name=vpc-id,Values=$VPC_ID" \
     --query 'Subnets[].CidrBlock' \
-    --output text)
+    --output text)"
 
 for CIDR in "$PUBLIC_CIDR" "$PRIVATE_CIDR_1" "$PRIVATE_CIDR_2"; do
     if echo "$EXISTING_CIDRS" | grep -q "$CIDR"; then
@@ -1661,14 +1661,14 @@ for CIDR in "$PUBLIC_CIDR" "$PRIVATE_CIDR_1" "$PRIVATE_CIDR_2"; do
     fi
 done
 
+
 # Ask for confirmation before proceeding
 read -p "Do you want to proceed with this configuration? (y/n) " -n 1 -r
 echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
     echo "Operation cancelled"
     exit 1
 fi
-
 
 # Set AWS CLI output format
 export AWS_DEFAULT_OUTPUT="json"
@@ -1679,12 +1679,12 @@ echo "----------------------------------------"
 
 # Create public subnet in AZ1
 echo "Creating public subnet in ${AZ1}..."
-PUBLIC_SUBNET_ID=$(aws ec2 create-subnet \
-    --vpc-id $VPC_ID \
-    --cidr-block $PUBLIC_CIDR \
-    --availability-zone $AZ1 \
+PUBLIC_SUBNET_ID="$(aws ec2 create-subnet \
+    --vpc-id "$VPC_ID" \
+    --cidr-block "$PUBLIC_CIDR" \
+    --availability-zone "$AZ1" \
     --query 'Subnet.SubnetId' \
-    --output text)
+    --output text)"
 
 if [ -z "$PUBLIC_SUBNET_ID" ]; then
     echo "Failed to create public subnet"
@@ -1693,24 +1693,24 @@ fi
 
 # Tag public subnet
 aws ec2 create-tags \
-    --resources $PUBLIC_SUBNET_ID \
-    --tags Key=Name,Value=Public-Subnet
+    --resources "$PUBLIC_SUBNET_ID" \
+    --tags "Key=Name,Value=Public-Subnet"
 
 # Enable auto-assign public IP for public subnet
 aws ec2 modify-subnet-attribute \
-    --subnet-id $PUBLIC_SUBNET_ID \
+    --subnet-id "$PUBLIC_SUBNET_ID" \
     --map-public-ip-on-launch
 
 echo "Public subnet created: $PUBLIC_SUBNET_ID"
 
 # Create first private subnet in AZ1
 echo "Creating first private subnet in ${AZ1}..."
-PRIVATE_SUBNET_ID_1=$(aws ec2 create-subnet \
-    --vpc-id $VPC_ID \
-    --cidr-block $PRIVATE_CIDR_1 \
-    --availability-zone $AZ1 \
+PRIVATE_SUBNET_ID_1="$(aws ec2 create-subnet \
+    --vpc-id "$VPC_ID" \
+    --cidr-block "$PRIVATE_CIDR_1" \
+    --availability-zone "$AZ1" \
     --query 'Subnet.SubnetId' \
-    --output text)
+    --output text)"
 
 if [ -z "$PRIVATE_SUBNET_ID_1" ]; then
     echo "Failed to create first private subnet"
@@ -1719,17 +1719,17 @@ fi
 
 # Tag first private subnet
 aws ec2 create-tags \
-    --resources $PRIVATE_SUBNET_ID_1 \
-    --tags Key=Name,Value=Private-Subnet-1
+    --resources "$PRIVATE_SUBNET_ID_1" \
+    --tags "Key=Name,Value=Private-Subnet-1"
 
 # Create second private subnet in AZ2
 echo "Creating second private subnet in ${AZ2}..."
-PRIVATE_SUBNET_ID_2=$(aws ec2 create-subnet \
-    --vpc-id $VPC_ID \
-    --cidr-block $PRIVATE_CIDR_2 \
-    --availability-zone $AZ2 \
+PRIVATE_SUBNET_ID_2="$(aws ec2 create-subnet \
+    --vpc-id "$VPC_ID" \
+    --cidr-block "$PRIVATE_CIDR_2" \
+    --availability-zone "$AZ2" \
     --query 'Subnet.SubnetId' \
-    --output text)
+    --output text)"
 
 if [ -z "$PRIVATE_SUBNET_ID_2" ]; then
     echo "Failed to create second private subnet"
@@ -1738,118 +1738,118 @@ fi
 
 # Tag second private subnet
 aws ec2 create-tags \
-    --resources $PRIVATE_SUBNET_ID_2 \
-    --tags Key=Name,Value=Private-Subnet-2
+    --resources "$PRIVATE_SUBNET_ID_2" \
+    --tags "Key=Name,Value=Private-Subnet-2"
 
 echo "Private subnets created: $PRIVATE_SUBNET_ID_1, $PRIVATE_SUBNET_ID_2"
 
 # Create public route table
 echo "Creating public route table..."
-PUBLIC_RT_ID=$(aws ec2 create-route-table \
-    --vpc-id $VPC_ID \
+PUBLIC_RT_ID="$(aws ec2 create-route-table \
+    --vpc-id "$VPC_ID" \
     --query 'RouteTable.RouteTableId' \
-    --output text)
+    --output text)"
 
 # Tag public route table
 aws ec2 create-tags \
-    --resources $PUBLIC_RT_ID \
-    --tags Key=Name,Value=Public-RT
+    --resources "$PUBLIC_RT_ID" \
+    --tags "Key=Name,Value=Public-RT"
 
 # Get Internet Gateway ID
-IGW_ID=$(aws ec2 describe-internet-gateways \
+IGW_ID="$(aws ec2 describe-internet-gateways \
     --filters "Name=attachment.vpc-id,Values=$VPC_ID" \
     --query 'InternetGateways[0].InternetGatewayId' \
-    --output text)
+    --output text)"
 
 # Create route to Internet Gateway in public route table
 aws ec2 create-route \
-    --route-table-id $PUBLIC_RT_ID \
-    --destination-cidr-block 0.0.0.0/0 \
-    --gateway-id $IGW_ID
+    --route-table-id "$PUBLIC_RT_ID" \
+    --destination-cidr-block "0.0.0.0/0" \
+    --gateway-id "$IGW_ID"
 
 # Associate public subnet with public route table
 aws ec2 associate-route-table \
-    --subnet-id $PUBLIC_SUBNET_ID \
-    --route-table-id $PUBLIC_RT_ID
+    --subnet-id "$PUBLIC_SUBNET_ID" \
+    --route-table-id "$PUBLIC_RT_ID"
 
 echo "Public route table created and associated: $PUBLIC_RT_ID"
 
 # Create private route table
 echo "Creating private route table..."
-PRIVATE_RT_ID=$(aws ec2 create-route-table \
-    --vpc-id $VPC_ID \
+PRIVATE_RT_ID="$(aws ec2 create-route-table \
+    --vpc-id "$VPC_ID" \
     --query 'RouteTable.RouteTableId' \
-    --output text)
+    --output text)"
 
 # Tag private route table
 aws ec2 create-tags \
-    --resources $PRIVATE_RT_ID \
-    --tags Key=Name,Value=Private-RT
+    --resources "$PRIVATE_RT_ID" \
+    --tags "Key=Name,Value=Private-RT"
 
 # Associate both private subnets with private route table
 aws ec2 associate-route-table \
-    --subnet-id $PRIVATE_SUBNET_ID_1 \
-    --route-table-id $PRIVATE_RT_ID
+    --subnet-id "$PRIVATE_SUBNET_ID_1" \
+    --route-table-id "$PRIVATE_RT_ID"
 
 aws ec2 associate-route-table \
-    --subnet-id $PRIVATE_SUBNET_ID_2 \
-    --route-table-id $PRIVATE_RT_ID
+    --subnet-id "$PRIVATE_SUBNET_ID_2" \
+    --route-table-id "$PRIVATE_RT_ID"
 
 echo "Private route table created and associated: $PRIVATE_RT_ID"
 
 # Create security group for public subnet
 echo "Creating public security group..."
-PUBLIC_SG_ID=$(aws ec2 create-security-group \
+PUBLIC_SG_ID="$(aws ec2 create-security-group \
     --group-name "Public-SG" \
     --description "Security group for public subnet" \
-    --vpc-id $VPC_ID \
+    --vpc-id "$VPC_ID" \
     --query 'GroupId' \
-    --output text)
+    --output text)"
 
 # Tag public security group
 aws ec2 create-tags \
-    --resources $PUBLIC_SG_ID \
-    --tags Key=Name,Value=Public-SG
+    --resources "$PUBLIC_SG_ID" \
+    --tags "Key=Name,Value=Public-SG"
 
 # Add inbound rules for public security group
 aws ec2 authorize-security-group-ingress \
-    --group-id $PUBLIC_SG_ID \
+    --group-id "$PUBLIC_SG_ID" \
     --protocol tcp \
     --port 80 \
-    --cidr 0.0.0.0/0
+    --cidr "0.0.0.0/0"
 
 aws ec2 authorize-security-group-ingress \
-    --group-id $PUBLIC_SG_ID \
+    --group-id "$PUBLIC_SG_ID" \
     --protocol tcp \
     --port 443 \
-    --cidr 0.0.0.0/0
+    --cidr "0.0.0.0/0"
 
 aws ec2 authorize-security-group-ingress \
-    --group-id $PUBLIC_SG_ID \
+    --group-id "$PUBLIC_SG_ID" \
     --protocol tcp \
     --port 22 \
-    --cidr 0.0.0.0/0
+    --cidr "0.0.0.0/0"
 
 # Create security group for private subnet (RDS)
 echo "Creating private security group for RDS..."
-PRIVATE_SG_ID=$(aws ec2 create-security-group \
+PRIVATE_SG_ID="$(aws ec2 create-security-group \
     --group-name "Private-RDS-SG" \
     --description "Security group for RDS in private subnet" \
-    --vpc-id $VPC_ID \
+    --vpc-id "$VPC_ID" \
     --query 'GroupId' \
-    --output text)
+    --output text)"
 
 # Tag private security group
 aws ec2 create-tags \
-    --resources $PRIVATE_SG_ID \
-    --tags Key=Name,Value=Private-RDS-SG
+    --resources "$PRIVATE_SG_ID" \
+    --tags "Key=Name,Value=Private-RDS-SG"
 
 # Add inbound rule for PostgreSQL from public security group only
 aws ec2 authorize-security-group-ingress \
-    --group-id $PRIVATE_SG_ID \
+    --group-id "$PRIVATE_SG_ID" \
     --protocol tcp \
     --port 5432 \
-    --source-group $PUBLIC_SG_ID
+    --source-group "$PUBLIC_SG_ID"
 
 echo "Security groups created and configured:"
 
@@ -1876,8 +1876,8 @@ export AWS_PAGER=""
 set -e
 
 # Variables
-ECC_NAME_ARG=$1-ec2
-CREATE_DATE=$(date '+%m-%d-%Y')
+ECC_NAME_ARG="$1-ec2"
+CREATE_DATE="$(date '+%m-%d-%Y')"
 EC2_INSTANCE_VERSION_EXISTS=false
 INSTANCE_VERSION=1
 MOST_RECENT_INSTANCE_VERSION="none"
@@ -1905,10 +1905,10 @@ if aws ec2 describe-instances \
     # ADD DEBUGGING OUTPUT HERE - END
 
     # Get the highest version number from existing instances
-    MOST_RECENT_INSTANCE_VERSION=$(aws ec2 describe-instances \
+    MOST_RECENT_INSTANCE_VERSION="$(aws ec2 describe-instances \
         --filters "Name=tag:Name,Values=${ECC_NAME_ARG}-${CREATE_DATE}*" \
         --query "Reservations[*].Instances[*].Tags[?Key=='Name'].Value" \
-        --output text | grep -o '[0-9]*$' | sort -nr | head -n 1)
+        --output text | grep -o '[0-9]*$' | sort -nr | head -n 1)"
 
     if [ -n "$MOST_RECENT_INSTANCE_VERSION" ]; then
         echo "Instance with similar name exists: Version $MOST_RECENT_INSTANCE_VERSION"
@@ -1973,7 +1973,7 @@ echo "Using VPC: $VPC_ID"
 echo "Using Subnet: $PUBLIC_SUBNET_ID"
 
 echo "Checking for existing key pair..."
-if aws ec2 describe-key-pairs --key-names "$KEY_PAIR_NAME" 2>&1 | grep -q 'does not exist'; then
+if aws ec2 describe-key-pairs --key-names "$KEY_PAIR_NAME" 2>"/dev/null" | grep -q 'does not exist'; then
     echo "Creating new key pair..."
     # Create key pair and save private key
     aws ec2 create-key-pair \
@@ -1998,7 +1998,7 @@ fi
 
 
 # Launch EC2 instance with public IP
-INSTANCE_ID=$(aws ec2 run-instances \
+INSTANCE_ID="$(aws ec2 run-instances \
     --image-id "$AMI_ID" \
     --instance-type "$INSTANCE_TYPE" \
     --key-name "$KEY_PAIR_NAME" \
@@ -2007,16 +2007,16 @@ INSTANCE_ID=$(aws ec2 run-instances \
     --associate-public-ip-address \
     --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$INSTANCE_NAME}]" \
     --query 'Instances[0].InstanceId' \
-    --output text)
+    --output text)"
 
 echo "Waiting for instance to be running..."
 aws ec2 wait instance-running --instance-ids "$INSTANCE_ID"
 
 # Get public IP address
-PUBLIC_IP=$(aws ec2 describe-instances \
+PUBLIC_IP="$(aws ec2 describe-instances \
     --instance-ids "$INSTANCE_ID" \
     --query 'Reservations[0].Instances[0].PublicIpAddress' \
-    --output text)
+    --output text)"
 
 echo "                                             "
 echo "EC2 instance has been created successfully!!!"
@@ -2064,7 +2064,7 @@ echo "ssh -i ${KEY_PAIR_NAME}.pem ec2-user@${PUBLIC_IP}"
 # EBS SCRIPT
 
 # Environment variables that need to be set
-EC2_INSTANCE_ID=$INSTANCE_ID  # Replace with your EC2 instance ID
+EC2_INSTANCE_ID="$INSTANCE_ID"  # Replace with your EC2 instance ID
 VOLUME_SIZE=30  # Size in GB
 VOLUME_TYPE="gp3"  # Volume type (gp3, gp2, io1, etc.)
 AVAILABILITY_ZONE="us-east-1a"  # Must be the same AZ as your EC2 instance
@@ -2075,14 +2075,14 @@ IOPS="3000"  # Default is 3000, can go up to 16000
 THROUGHPUT="125"  # Default is 125, can go up to 1000
 
 # Get the availability zone of the instance
-INSTANCE_AZ=$(aws ec2 describe-instances \
-    --instance-ids $EC2_INSTANCE_ID \
+INSTANCE_AZ="$(aws ec2 describe-instances \
+    --instance-ids "$EC2_INSTANCE_ID" \
     --query 'Reservations[0].Instances[0].Placement.AvailabilityZone' \
-    --output text)
+    --output text)"
 
-    AVAILABILITY_ZONE=$INSTANCE_AZ
+AVAILABILITY_ZONE="$INSTANCE_AZ"
 
-if [ $? -ne 0 ]; then
+if [ "$?" -ne 0 ]; then
     echo "Error: Failed to get instance availability zone"
     exit 1
 fi
@@ -2090,16 +2090,16 @@ fi
 
 # Create the EBS volume
 echo "Creating EBS volume..."
-EBS_VOLUME_ID=$(aws ec2 create-volume \
-    --size $VOLUME_SIZE \
-    --volume-type $VOLUME_TYPE \
-    --iops $IOPS \
-    --throughput $THROUGHPUT \
-    --availability-zone $AVAILABILITY_ZONE \
+EBS_VOLUME_ID="$(aws ec2 create-volume \
+    --size "$VOLUME_SIZE" \
+    --volume-type "$VOLUME_TYPE" \
+    --iops "$IOPS" \
+    --throughput "$THROUGHPUT" \
+    --availability-zone "$AVAILABILITY_ZONE" \
     --query 'VolumeId' \
-    --output text)
+    --output text)"
 
-if [ $? -ne 0 ]; then
+if [ "$?" -ne 0 ]; then
     echo "Error: Failed to create EBS volume"
     exit 1
 fi
@@ -2108,16 +2108,16 @@ echo "Volume created: $EBS_VOLUME_ID"
 
 # Wait for volume to become available
 echo "Waiting for volume to become available..."
-aws ec2 wait volume-available --volume-ids $EBS_VOLUME_ID
+aws ec2 wait volume-available --volume-ids "$EBS_VOLUME_ID"
 
 # Attach the volume to the EC2 instance
 echo "Attaching volume to instance..."
 aws ec2 attach-volume \
-    --volume-id $EBS_VOLUME_ID \
-    --instance-id $EC2_INSTANCE_ID \
-    --device $DEVICE_NAME
+    --volume-id "$EBS_VOLUME_ID" \
+    --instance-id "$EC2_INSTANCE_ID" \
+    --device "$DEVICE_NAME"
 
-if [ $? -ne 0 ]; then
+if [ "$?" -ne 0 ]; then
     echo "Error: Failed to attach volume"
     exit 1
 fi
@@ -2149,9 +2149,9 @@ export AWS_PAGER=""
 set -e
 
 # Read from .env file
-if [ -f .env ]; then
+if [ -f ".env" ]; then
     # Read DB_PASSWORD from .env file
-    DB_PASSWORD=$(grep '^DB_PASSWORD=' .env | cut -d '=' -f2)
+    DB_PASSWORD="$(grep '^DB_PASSWORD=' ".env" | cut -d '=' -f2)"
     # Export it for use in the script
     export DB_PASSWORD
 else
@@ -2166,7 +2166,7 @@ if [ -z "$DB_PASSWORD" ]; then
 fi
 
 # Keep the existing password validation checks
-if [ ${#DB_PASSWORD} -lt 8 ] || [ ${#DB_PASSWORD} -gt 41 ]; then
+if [ "${#DB_PASSWORD}" -lt 8 ] || [ "${#DB_PASSWORD}" -gt 41 ]; then
     echo "Error: DB_PASSWORD must be between 8 and 41 characters long"
     exit 1
 fi
@@ -2194,16 +2194,16 @@ fi
 echo "Using VPC: $VPC_ID"
 
 echo "PRIVATE_SUBNET_ID_1:"
-echo $PRIVATE_SUBNET_ID_1
+echo "$PRIVATE_SUBNET_ID_1"
 echo "PRIVATE_SUBNET_ID_2:"
-echo $PRIVATE_SUBNET_ID_2
+echo "$PRIVATE_SUBNET_ID_2"
 
 # Create DB subnet group
 echo "Creating DB subnet group..."
 aws rds create-db-subnet-group \
     --db-subnet-group-name "$SUBNET_GROUP_NAME" \
     --db-subnet-group-description "Subnet group for PostgreSQL RDS" \
-    --subnet-ids ${PRIVATE_SUBNET_ID_1} ${PRIVATE_SUBNET_ID_2}
+    --subnet-ids "$PRIVATE_SUBNET_ID_1" "$PRIVATE_SUBNET_ID_2"
     # --subnet-ids '["'${PRIVATE_SUBNET_ID_1}'","'${PRIVATE_SUBNET_ID_2}'"]'
     # --subnet-ids "[\"${PRIVATE_SUBNET_ID_1}\",\"${PRIVATE_SUBNET_ID_2}\"]"
 
@@ -2237,14 +2237,14 @@ echo "Waiting for RDS instance to be available..."
 aws rds wait db-instance-available --db-instance-identifier "$DB_IDENTIFIER"
 
 # Get instance details
-INSTANCE_INFO=$(aws rds describe-db-instances \
+INSTANCE_INFO="$(aws rds describe-db-instances \
     --db-instance-identifier "$DB_IDENTIFIER" \
     --query 'DBInstances[0].[Endpoint.Address,Endpoint.Port,DBInstanceStatus]' \
-    --output text)
+    --output text)"
 
-ENDPOINT=$(echo $INSTANCE_INFO | cut -d' ' -f1)
-PORT=$(echo $INSTANCE_INFO | cut -d' ' -f2)
-STATUS=$(echo $INSTANCE_INFO | cut -d' ' -f3)
+ENDPOINT="$(echo "$INSTANCE_INFO" | cut -d' ' -f1)"
+PORT="$(echo "$INSTANCE_INFO" | cut -d' ' -f2)"
+STATUS="$(echo "$INSTANCE_INFO" | cut -d' ' -f3)"
 
 echo "----------------------------------------"
 echo "RDS Instance Created Successfully!"
@@ -2296,20 +2296,20 @@ lsblk
 sleep 2
 
 # Check if volume exists
-if [ ! -e /dev/xvdf ]; then
+if [ ! -e "/dev/xvdf" ]; then
     echo "Error: Volume /dev/xvdf not found"
     exit 1
 fi
 
 # Check volume status
 echo "Checking volume status..."
-volume_status=$(sudo file -s /dev/xvdf)
+volume_status="$(sudo file -s /dev/xvdf)"
 echo "Volume status: $volume_status"
 
 # Format the volume (only if new)
 if ! echo "$volume_status" | grep -q "XFS"; then
     echo "Formatting volume with XFS..."
-    sudo mkfs -t xfs /dev/xvdf
+    sudo mkfs -t xfs "/dev/xvdf"
     # Wait for format to complete
     sleep 5
     echo "Volume formatting completed"
@@ -2317,32 +2317,32 @@ fi
 
 # Create mount point if needed
 echo "Setting up mount point..."
-if [ ! -d /app ]; then
-    sudo mkdir /app
+if [ ! -d "/app" ]; then
+    sudo mkdir "/app"
     echo "Created /app directory"
 fi
 
 # Mount the volume
 echo "Mounting volume..."
-sudo mount /dev/xvdf /app
+sudo mount "/dev/xvdf" "/app"
 
 # Check mount
-if ! mountpoint -q /app; then
+if ! mountpoint -q "/app"; then
     echo "Error: Failed to mount volume"
     exit 1
 fi
 
 # Add to fstab if needed
 echo "Configuring persistent mount..."
-if ! grep -q "/dev/xvdf /app" /etc/fstab; then
-    echo "/dev/xvdf /app xfs defaults,nofail 0 2" | sudo tee -a /etc/fstab
+if ! grep -q "/dev/xvdf /app" "/etc/fstab"; then
+    echo "/dev/xvdf /app xfs defaults,nofail 0 2" | sudo tee -a "/etc/fstab"
     echo "Added mount configuration to fstab"
 fi
 
 # Set appropriate permissions
 echo "Setting directory permissions..."
-sudo chown ec2-user:ec2-user /app
-sudo chmod 755 /app
+sudo chown ec2-user:ec2-user "/app"
+sudo chmod 755 "/app"
 
 # Install nvm
 echo "Installing nvm..."
