@@ -30,34 +30,35 @@ REPO_VERSION=1
 # Function to check if repository exists and get latest version
 check_repo_version() {
     local base_name="$ADMIN_NAME_ARG-$CREATE_DATE"
+    local highest_version=0  # Initialize to 0 instead of 1
 
     # Check GitHub repositories
-    local existing_repos="$(gh repo list ScottFeichter --json name --limit 100 | grep -o "\"name\":\"$base_name-[0-9]*\"")"
+    local existing_repos=$(gh repo list ScottFeichter --json name --limit 100 | grep -o "\"name\":\"$base_name-[0-9]*\"")
 
     # Check local directories
-    local existing_dirs="$(ls -d "$base_name"* 2>/dev/null)"
-
-    local highest_version=1
+    local existing_dirs=$(ls -d "$base_name"* 2>/dev/null)
 
     # Check versions from GitHub repos
     if [ -n "$existing_repos" ]; then
-        local gh_version="$(echo "$existing_repos" | grep -o '[0-9]*$' | sort -n | tail -1)"
-        if [ "$gh_version" -gt "$highest_version" ]; then
-            highest_version="$gh_version"
+        local gh_version=$(echo "$existing_repos" | grep -o '[0-9]*$' | sort -n | tail -1)
+        if [ -n "$gh_version" ] && [ "$gh_version" -gt "$highest_version" ]; then
+            highest_version=$gh_version
         fi
     fi
 
     # Check versions from local directories
     if [ -n "$existing_dirs" ]; then
-        local dir_version="$(echo "$existing_dirs" | grep -o "$base_name-[0-9]*$" | grep -o '[0-9]*$' | sort -n | tail -1)"
+        local dir_version=$(echo "$existing_dirs" | grep -o "$base_name-[0-9]*$" | grep -o '[0-9]*$' | sort -n | tail -1)
         if [ -n "$dir_version" ] && [ "$dir_version" -gt "$highest_version" ]; then
-            highest_version="$dir_version"
+            highest_version=$dir_version
         fi
     fi
 
-    # If we found any existing versions, increment the highest one
+    # Only increment if we found existing versions
     if [ "$highest_version" -gt 0 ]; then
         REPO_VERSION=$((highest_version + 1))
+    else
+        REPO_VERSION=1  # Start with version 1 if no existing versions found
     fi
 }
 
@@ -1623,7 +1624,7 @@ PRIVATE_CIDR_2="${VPC_PREFIX}.3.0/24" # 10.0.3.0/24
 AVAILABLE_AZS="$(aws ec2 describe-availability-zones \
     --filters "Name=state,Values=available" \
     --query 'AvailabilityZones[].ZoneName' \
-    --output text)"
+    --output text)
 
 AZ1="$(echo "$AVAILABLE_AZS" | cut -d' ' -f1)"
 AZ2="$(echo "$AVAILABLE_AZS" | cut -d' ' -f2)"
