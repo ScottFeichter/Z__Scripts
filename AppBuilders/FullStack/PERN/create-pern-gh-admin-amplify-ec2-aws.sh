@@ -625,7 +625,7 @@ FRONTEND_REPO_NAME="$FRONTEND_NAME_ARG-$CREATE_DATE-$REPO_VERSION"
 
 # Initialize project with Vite
 echo "Creating React w Vite project: $FRONTEND_REPO_NAME..."
-npm create vite@latest $FRONTEND_REPO_NAME -- --template react -- --skip-git
+npm create vite@latest $FRONTEND_REPO_NAME -- --template react-ts -- --skip-git
 
 cd $FRONTEND_REPO_NAME
 
@@ -809,7 +809,7 @@ export default Layout;
 EOL
 
 # Create the file src/vite-env.d.ts
-cat > vite-env.d.ts << EOL
+cat > src/vite-env.d.ts << EOL
 /// <reference types="vite/client" />
 
 declare module '*.svg' {
