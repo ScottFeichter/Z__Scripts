@@ -1,120 +1,156 @@
 #!/bin/bash
 
-export AWS_PAGER=""  # Disable the AWS CLI pager so we don't get json output
+export AWS_PAGER=""
 
-# Array of bucket names - change them to suit your needs
+# Array of bucket names
 BUCKETS=(
-admiend-neorgp-02-21-2025-1-20250221021747-802b1d2a
-admiend-neorgp-02-21-2025-2-20250221023145-f019d2ac
-admiend-neorgp-02-21-2025-3-20250221030005-20f81491
-admiend-neorgp-02-21-2025-4-20250221030223-2e0cccd4
+    "admiend-neorgp-02-21-2025-1-20250221021747-802b1d2a"
+    "admiend-neorgp-02-21-2025-2-20250221023145-f019d2ac"
+    "admiend-neorgp-02-21-2025-3-20250221030005-20f81491"
+    "admiend-neorgp-02-21-2025-4-20250221030223-2e0cccd4"
 )
 
-# Check if jq is installed
-if ! command -v jq &> /dev/null; then
-    echo "Error: jq is required but not installed. Please install jq first."
-    exit 1
-fi
+delete_bucket_contents() {
+    local bucket="$1"
+    local batch_count=0
+    local max_attempts=50  # Maximum number of deletion attempts
 
-# Function to delete all versions from a bucket
-delete_all_versions() {
-    local bucket=$1
-    echo "Deleting all versions from bucket: $bucket"
+    echo "Emptying bucket: $bucket"
 
-    # Get all versions and delete markers in one go
-    versions=$(aws s3api list-object-versions \
-        --bucket "$bucket" \
-        --output json \
-        --query '{Objects: Objects[].{Key:Key,VersionId:VersionId}, DeleteMarkers: DeleteMarkers[].{Key:Key,VersionId:VersionId}}' 2>/dev/null)
+    # First remove current objects
+    echo "Removing current objects..."
+    aws s3 rm "s3://$bucket" --recursive
 
-    # Process objects in batches of 1000 (S3 delete limit)
-    while true; do
-        # Get up to 1000 object versions
-        batch=$(echo "$versions" | jq -r '
-            (.Objects + .DeleteMarkers) |
-            select(. != null) |
-            limit(1000;.[]) |
-            select(. != null) |
-            {Key:.Key, VersionId:.VersionId} |
-            tojson' | jq -s .)
+    # Then handle versions and delete markers
+    while [ $batch_count -lt $max_attempts ]; do
+        ((batch_count++))
+        echo "Deletion attempt $batch_count of $max_attempts"
 
-        # Break if no more objects
-        if [ "$batch" == "[]" ] || [ -z "$batch" ]; then
-            break
+        # Get versions and delete markers
+        versions=$(aws s3api list-object-versions \
+            --bucket "$bucket" \
+            --max-items 1000 \
+            --output json 2>/dev/null)
+
+        # Check if we got any data
+        if [ -z "$versions" ] || [ "$versions" = "null" ]; then
+            echo "No more objects found"
+            return 0
         fi
 
-        echo "Deleting batch of objects..."
+        # Create delete JSON
+        tmp_file=$(mktemp)
+        echo "$versions" | jq -r '{
+            Objects: ([.Versions[]?, .DeleteMarkers[]?] | map({Key: .Key, VersionId: .VersionId})),
+            Quiet: true
+        }' > "$tmp_file"
 
-        # Create delete request JSON
-        delete_json=$(echo "{\"Objects\": $batch, \"Quiet\": true}")
+        # Check if we have objects to delete
+        object_count=$(jq -r '.Objects | length' "$tmp_file")
+        if [ -z "$object_count" ] || [ "$object_count" = "null" ] || [ "$object_count" = "0" ]; then
+            rm -f "$tmp_file"
+            echo "No more objects to delete"
+            return 0
+        fi
 
-        # Delete batch
-        aws s3api delete-objects \
+        echo "Deleting batch of $object_count objects (attempt $batch_count)..."
+
+        # Delete objects
+        if aws s3api delete-objects \
             --bucket "$bucket" \
-            --delete "$delete_json"
-
-        if [ $? -ne 0 ]; then
-            echo "Error deleting objects batch"
+            --delete "file://$tmp_file" > /dev/null; then
+            echo "Successfully deleted batch $batch_count"
+        else
+            echo "Error deleting batch $batch_count"
+            rm -f "$tmp_file"
             return 1
         fi
+
+        rm -f "$tmp_file"
+        sleep 2  # Increased delay between batches
     done
+
+    echo "Warning: Reached maximum deletion attempts ($max_attempts)"
+    return 1
 }
 
-# Function to delete a bucket and its contents
 delete_bucket() {
-    local bucket=$1
+    local bucket="$1"
     echo "Processing bucket: $bucket"
+    echo "----------------------------------------"
 
     # Check if bucket exists
-    if aws s3 ls "s3://$bucket" &>/dev/null; then
-        echo "  Removing all objects and versions from bucket..."
-
-        # First try simple removal
-        aws s3 rm "s3://$bucket" --recursive
-
-        # Then handle versioned objects
-        delete_all_versions "$bucket"
-
-        # Double check for any remaining objects
-        echo "  Checking for any remaining objects..."
-        aws s3api list-object-versions \
-            --bucket "$bucket" \
-            --max-items 1 &>/dev/null
-
-        if [ $? -eq 0 ]; then
-            echo "  Running deletion process again to ensure all objects are removed..."
-            delete_all_versions "$bucket"
-        fi
-
-        # Try to delete the bucket
-        echo "  Attempting to delete bucket..."
-        if aws s3 rb "s3://$bucket"; then
-            echo "  Successfully deleted bucket: $bucket"
-        else
-            echo "  Failed to delete bucket: $bucket"
-            echo "  Checking for remaining objects..."
-            aws s3api list-object-versions --bucket "$bucket"
-        fi
-    else
-        echo "  Bucket does not exist: $bucket"
+    if ! aws s3api head-bucket --bucket "$bucket" 2>/dev/null; then
+        echo "Bucket does not exist or no access: $bucket"
+        return 1
     fi
-    echo "----------------------------------------"
+
+    # Empty the bucket
+    if ! delete_bucket_contents "$bucket"; then
+        echo "Failed to empty bucket: $bucket"
+        return 1
+    fi
+
+    # Verify bucket is empty
+    echo "Verifying bucket is empty..."
+    if aws s3api list-object-versions --bucket "$bucket" --max-items 1 &>/dev/null; then
+        versions_count=$(aws s3api list-object-versions --bucket "$bucket" --output json | jq -r '.Versions | length')
+        if [ "$versions_count" != "null" ] && [ "$versions_count" != "0" ]; then
+            echo "Bucket still contains objects after deletion attempts"
+            return 1
+        fi
+    fi
+
+    # Delete the bucket
+    echo "Deleting bucket: $bucket"
+    if aws s3api delete-bucket --bucket "$bucket"; then
+        echo "Successfully deleted bucket: $bucket"
+        return 0
+    else
+        echo "Failed to delete bucket: $bucket"
+        return 1
+    fi
 }
 
-# Main execution
+# Main script
 echo "Starting bucket deletion process..."
 echo "Found ${#BUCKETS[@]} buckets to process"
 echo "----------------------------------------"
 
+# Print list of buckets
+echo "Buckets to be deleted:"
+for bucket in "${BUCKETS[@]}"; do
+    echo "- $bucket"
+done
+echo "----------------------------------------"
+
 # Confirm before proceeding
-read -p "Do you want to proceed with deletion of these buckets? (y/n): " confirm
+read -p "Continue with deletion? (y/n): " confirm
 if [[ ! $confirm =~ ^[Yy]$ ]]; then
     echo "Operation cancelled"
     exit 0
 fi
 
+# Process buckets
+success=0
+failed=0
+
 for bucket in "${BUCKETS[@]}"; do
-    delete_bucket "$bucket"
+    if delete_bucket "$bucket"; then
+        ((success++))
+    else
+        ((failed++))
+    fi
+    echo "----------------------------------------"
 done
 
-echo "Bucket deletion process complete!"
+# Summary
+echo "Deletion process complete!"
+echo "Summary:"
+echo "- Successfully deleted: $success buckets"
+echo "- Failed to delete: $failed buckets"
+echo "----------------------------------------"
+
+if [ $failed -gt 0 ]; then
+    exit 1
+fi
