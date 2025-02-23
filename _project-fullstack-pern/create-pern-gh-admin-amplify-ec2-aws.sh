@@ -1707,13 +1707,15 @@ for CIDR in "$PUBLIC_CIDR" "$PRIVATE_CIDR_1" "$PRIVATE_CIDR_2"; do
     fi
 done
 
-# Ask for confirmation before proceeding
-read -p "Do you want to proceed with this configuration? (y/n) " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Operation cancelled"
-    exit 1
-fi
+
+#! I am turning this confirmaion off as it appears to be unnecessary
+# # Ask for confirmation before proceeding
+# read -p "Do you want to proceed with this configuration? (y/n) " -n 1 -r
+# echo
+# if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+#     echo "Operation cancelled"
+#     exit 1
+# fi
 
 
 # Set AWS CLI output format
