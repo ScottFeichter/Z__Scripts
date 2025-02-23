@@ -515,7 +515,7 @@ fi
 #########################################################################################################################
 
 ######################################################################################################
-# create-git-hook.sh
+echo "Creating hook for Git/GitHub/S3..."
 
 # Check if we're in a Git repository
 echo "Checking if Git repo..."
@@ -648,31 +648,6 @@ git branch Development
 # Create GitHub repository
 gh repo create "$FRONTEND_REPO_NAME" --public
 
-# Create Personal Access Token with necessary scopes for AWS Amplify
-echo "Creating GitHub Personal Access Token for AWS Amplify..."
-TOKEN=$(gh api \
-    --method POST \
-    -H "Accept: application/vnd.github+json" \
-    /user/tokens \
-    -f note="AWS Amplify Token for $FRONTEND_REPO_NAME" \
-    -f permissions[contents]="write" \
-    -f permissions[metadata]="read" \
-    -f permissions[workflows]="write" \
-    -f permissions[admin:repo_hook]="write" \
-    -f permissions[repo:status]="write" \
-    --jq '.token')
-
-# Store token in AWS Secrets Manager
-echo "Storing GitHub token in AWS Secrets Manager..."
-aws secretsmanager create-secret \
-    --name "github-token-$FRONTEND_REPO_NAME" \
-    --description "GitHub token for $FRONTEND_REPO_NAME AWS Amplify integration" \
-    --secret-string "$TOKEN"
-
-# Save token to local file (optional, for reference)
-echo "Saving token reference locally..."
-echo "GitHub Token for $FRONTEND_REPO_NAME has been stored in AWS Secrets Manager with name: github-token-$FRONTEND_REPO_NAME" > github-token-reference.txt
-
 # Configure remote and push
 git remote add origin "https://github.com/ScottFeichter/$FRONTEND_REPO_NAME.git"
 git branch -M main
@@ -683,8 +658,7 @@ git push origin Production
 git push origin Staging
 git push origin Development
 
-echo "Repository initialized and GitHub token created and stored in AWS Secrets Manager"
-echo "Token reference saved in github-token-reference.txt"
+echo "Repository initialized local and remote pushed"
 
 
 
@@ -990,9 +964,8 @@ Happy coding! 🎉"
 
     # Get authentication token
     #! Note: This gets the token used by gh cli ie gho_xxxxxxx
-    #! TOKEN=$(gh auth token)
-    #! Instead we are trying to use the personal access token created via developer settings ie ghp_xxxxxxxxx
-    #! The ghp was created when we initialized the repo and it is specific to the frontend repo of this app only
+    TOKEN=$(gh auth token)
+
 
 
     # Print results
@@ -1036,10 +1009,10 @@ echo "Creating Amplify app..."
 APP_ID=$(aws amplify create-app \
     --name "${FRONTEND_REPO_NAME}" \
     --repository "${FRONTEND_REPO_URL}" \
-    --oauth-token "${TOKEN}" \
     --access-token "${TOKEN}" \
-    --query 'app.appId' \
-    --output text)
+    --platform "WEB" \
+    --custom-rules "[{\"source\": \"</^[^.]+$|\\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|woff2|ttf|map|json)$)([^.]+$)/>\", \"target\": \"/index.html\", \"status\": \"200\"}]"
+
 
 
 if [ -z "$APP_ID" ]; then
