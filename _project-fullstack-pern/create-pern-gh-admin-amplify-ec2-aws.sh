@@ -1004,21 +1004,25 @@ echo "Starting Amplify deployment process..."
 
 
 
-# Create a new Amplify app connected to GitHub
+# Create Amplify app
 echo "Creating Amplify app..."
 APP_ID=$(aws amplify create-app \
-    --name "${FRONTEND_REPO_NAME}" \
-    --repository "${FRONTEND_REPO_URL}" \
-    --access-token "${TOKEN}" \
+    --name "$FRONTEND_REPO_NAME" \
+    --repository "https://github.com/ScottFeichter/$FRONTEND_REPO_NAME" \
+    --access-token "$TOKEN" \
     --platform "WEB" \
-    --custom-rules "[{\"source\": \"</^[^.]+$|\\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|woff2|ttf|map|json)$)([^.]+$)/>\", \"target\": \"/index.html\", \"status\": \"200\"}]"
+    --custom-rules '[{"source": "<\/^[^.]+$|\\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|woff2|ttf|map|json)$)([^.]+$)\/>/", "target": "/index.html", "status": "200"}]' \
+    --query 'app.appId' \
+    --output text)
 
-
-
+# Check Amplify app created
 if [ -z "$APP_ID" ]; then
-    echo "Error: Failed to create Amplify app"
+    echo "Failed to create Amplify app"
     exit 1
+else
+    echo "Successfully created Amplify app with ID: $APP_ID"
 fi
+
 
 # Create main branch
 echo "Creating branch..."
