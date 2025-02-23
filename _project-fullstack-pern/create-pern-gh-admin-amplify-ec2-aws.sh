@@ -598,6 +598,9 @@ npm create vite@latest $FRONTEND_REPO_NAME -- --template react -- --skip-git
 
 cd $FRONTEND_REPO_NAME
 
+
+
+
 # Initialize repository
 echo "Initializing git local and remote..."
 git init
@@ -611,11 +614,47 @@ git branch Production
 git branch Staging
 git branch Development
 
+# Create GitHub repository
 gh repo create "$FRONTEND_REPO_NAME" --public
 
+# Create Personal Access Token with necessary scopes for AWS Amplify
+echo "Creating GitHub Personal Access Token for AWS Amplify..."
+TOKEN=$(gh api \
+    --method POST \
+    -H "Accept: application/vnd.github+json" \
+    /user/tokens \
+    -f note="AWS Amplify Token for $FRONTEND_REPO_NAME" \
+    -f permissions[contents]="write" \
+    -f permissions[metadata]="read" \
+    -f permissions[workflows]="write" \
+    -f permissions[admin:repo_hook]="write" \
+    -f permissions[repo:status]="write" \
+    --jq '.token')
+
+# Store token in AWS Secrets Manager
+echo "Storing GitHub token in AWS Secrets Manager..."
+aws secretsmanager create-secret \
+    --name "github-token-$FRONTEND_REPO_NAME" \
+    --description "GitHub token for $FRONTEND_REPO_NAME AWS Amplify integration" \
+    --secret-string "$TOKEN"
+
+# Save token to local file (optional, for reference)
+echo "Saving token reference locally..."
+echo "GitHub Token for $FRONTEND_REPO_NAME has been stored in AWS Secrets Manager with name: github-token-$FRONTEND_REPO_NAME" > github-token-reference.txt
+
+# Configure remote and push
 git remote add origin "https://github.com/ScottFeichter/$FRONTEND_REPO_NAME.git"
 git branch -M main
 git push -u origin main
+
+# Push other branches
+git push origin Production
+git push origin Staging
+git push origin Development
+
+echo "Repository initialized and GitHub token created and stored in AWS Secrets Manager"
+echo "Token reference saved in github-token-reference.txt"
+
 
 
 
@@ -913,9 +952,13 @@ Happy coding! 🎉"
     # Get repository URL
     FRONTEND_REPO_URL=$(gh repo view "ScottFeichter/$FRONTEND_REPO_NAME" --json url -q .url)
 
+
     # Get authentication token
-    # Note: This gets the token used by gh cli
-    TOKEN=$(gh auth token)
+    #! Note: This gets the token used by gh cli ie gho_xxxxxxx
+    #! TOKEN=$(gh auth token)
+    #! Instead we are trying to use the personal access token created via developer settings ie ghp_xxxxxxxxx
+    #! The ghp was created when we initialized the repo and it is specific to the frontend repo of this app only
+
 
     # Print results
     echo " "
@@ -923,7 +966,10 @@ Happy coding! 🎉"
     echo "======================"
     echo "Name: $FRONTEND_REPO_NAME"
     echo "URL: $FRONTEND_REPO_URL"
+    echo " "
+    echo " "
     echo "Token: $TOKEN"
+    echo " "
     echo " "
 
 
