@@ -1030,51 +1030,66 @@ aws amplify create-branch \
     --app-id "${APP_ID}" \
     --branch-name "main"
 
-# Wait for deployment to complete
-echo "Waiting for initial deployment..."
-DEPLOY_TIMEOUT=300  # 5 minute timeout
-ELAPSED=0
-INTERVAL=10  # Check every 10 seconds
+echo "You need to adjust via the AWS Amplify Console for this app to use gh app instead of oauth..."
+echo "After this adjustment is made you then need to run the deploy as it will have been paused..."
 
-while [ $ELAPSED -lt $DEPLOY_TIMEOUT ]; do
-    # Get the active job ID
-    ACTIVE_JOB_ID=$(aws amplify get-branch \
-        --app-id "${APP_ID}" \
-        --branch-name "main" \
-        --query 'branch.activeJobId' \
-        --output text)
+#! I will suppress the waiting for amplify deploy
+# BEGINING OF WAITING FOR APP TO COMPLETE
+############################################################################################################################
 
-    if [ "$ACTIVE_JOB_ID" != "None" ]; then
-        # Get the status of the active job
-        JOB_STATUS=$(aws amplify get-job \
-            --app-id "${APP_ID}" \
-            --branch-name "main" \
-            --job-id "${ACTIVE_JOB_ID}" \
-            --query 'job.summary.status' \
-            --output text)
 
-        if [ "$JOB_STATUS" = "SUCCEED" ]; then
-            echo "Deployment completed successfully!"
-            break
-        elif [ "$JOB_STATUS" = "FAILED" ]; then
-            echo "Deployment failed. Please check the AWS Amplify Console"
-            exit 1
-        else
-            echo "  Deployment status: ${JOB_STATUS}... Timeout after: ${DEPLOY_TIMEOUT}s... Time elapsed: ${ELAPSED}s..."
-            sleep $INTERVAL
-            ELAPSED=$((ELAPSED + INTERVAL))
-        fi
-    else
-        echo "Waiting for deployment to start..."
-        sleep $INTERVAL
-        ELAPSED=$((ELAPSED + INTERVAL))
-    fi
-done
+# # Wait for deployment to complete
+# echo "Waiting for initial deployment..."
+# DEPLOY_TIMEOUT=300  # 5 minute timeout
+# ELAPSED=0
+# INTERVAL=10  # Check every 10 seconds
 
-if [ $ELAPSED -ge $DEPLOY_TIMEOUT ]; then
-    echo "  Deployment verification timed out after ${DEPLOY_TIMEOUT} seconds"
-    echo "Please check the AWS Amplify Console for deployment status..."
-fi
+# while [ $ELAPSED -lt $DEPLOY_TIMEOUT ]; do
+#     # Get the active job ID
+#     ACTIVE_JOB_ID=$(aws amplify get-branch \
+#         --app-id "${APP_ID}" \
+#         --branch-name "main" \
+#         --query 'branch.activeJobId' \
+#         --output text)
+
+#     if [ "$ACTIVE_JOB_ID" != "None" ]; then
+#         # Get the status of the active job
+#         JOB_STATUS=$(aws amplify get-job \
+#             --app-id "${APP_ID}" \
+#             --branch-name "main" \
+#             --job-id "${ACTIVE_JOB_ID}" \
+#             --query 'job.summary.status' \
+#             --output text)
+
+#         if [ "$JOB_STATUS" = "SUCCEED" ]; then
+#             echo "Deployment completed successfully!"
+#             break
+#         elif [ "$JOB_STATUS" = "FAILED" ]; then
+#             echo "Deployment failed. Please check the AWS Amplify Console"
+#             exit 1
+#         else
+#             echo "  Deployment status: ${JOB_STATUS}... Timeout after: ${DEPLOY_TIMEOUT}s... Time elapsed: ${ELAPSED}s..."
+#             sleep $INTERVAL
+#             ELAPSED=$((ELAPSED + INTERVAL))
+#         fi
+#     else
+#         echo "Waiting for deployment to start..."
+#         sleep $INTERVAL
+#         ELAPSED=$((ELAPSED + INTERVAL))
+#     fi
+# done
+
+# if [ $ELAPSED -ge $DEPLOY_TIMEOUT ]; then
+#     echo "  Deployment verification timed out after ${DEPLOY_TIMEOUT} seconds"
+#     echo "Please check the AWS Amplify Console for deployment status..."
+# fi
+
+
+############################################################################################################################
+# END OF WAITING FOR APP TO COMPLETE
+
+
+
 
 # Get the full URL of the app
 echo " "
