@@ -18,9 +18,7 @@ export AWS_PAGER=""
 
 # List of VPCs to delete
 VPC_LIST=(
-vpc-080b9065a30647f92
-vpc-0acae128201fa0688
-vpc-0b65c101d334323c3
+vpc-08c8fe5e0bb8e5396
 
     # Add more VPC IDs as needed
 )
@@ -195,6 +193,75 @@ delete_vpc() {
             echo "    Warning: Could not delete ENI. It may be managed by another service."
         fi
     done
+
+
+    # Get all security group IDs for the VPC
+    echo "Getting security groups for VPC $VPC_ID..."
+    SECURITY_GROUP_IDS=$(aws ec2 describe-security-groups \
+        --filters "Name=vpc-id,Values=$VPC_ID" \
+        --query 'SecurityGroups[].GroupId' \
+        --output text)
+
+    if [ -z "$SECURITY_GROUP_IDS" ]; then
+        echo "No security groups found for VPC $VPC_ID"
+    else
+        echo "Found security groups: $SECURITY_GROUP_IDS"
+
+        # Process each security group
+        for sg_id in $SECURITY_GROUP_IDS; do
+            # Check if this is the default security group
+            SG_NAME=$(aws ec2 describe-security-groups --group-ids $sg_id --query 'SecurityGroups[0].GroupName' --output text)
+
+            if [ "$SG_NAME" = "default" ]; then
+                echo "Skipping default security group: $sg_id (This will be deleted automatically with the VPC)"
+                continue
+            fi
+
+            echo "Checking dependencies for Security Group: $sg_id"
+
+            # Remove all inbound rules
+            echo "Removing inbound rules for $sg_id"
+            aws ec2 describe-security-group-rules \
+                --filters Name=group-id,Values=$sg_id Name=is-egress,Values=false \
+                --query 'SecurityGroupRules[].SecurityGroupRuleId' \
+                --output text | tr '\t' '\n' | while read rule_id; do
+                if [ ! -z "$rule_id" ]; then
+                    aws ec2 revoke-security-group-rules \
+                        --group-id $sg_id \
+                        --security-group-rule-ids $rule_id
+                fi
+            done
+
+            # Remove all outbound rules
+            echo "Removing outbound rules for $sg_id"
+            aws ec2 describe-security-group-rules \
+                --filters Name=group-id,Values=$sg_id Name=is-egress,Values=true \
+                --query 'SecurityGroupRules[].SecurityGroupRuleId' \
+                --output text | tr '\t' '\n' | while read rule_id; do
+                if [ ! -z "$rule_id" ]; then
+                    aws ec2 revoke-security-group-rules \
+                        --group-id $sg_id \
+                        --security-group-rule-ids $rule_id
+                fi
+            done
+
+            # Try to delete the non-default security group
+            echo "Attempting to delete security group: $sg_id"
+            if aws ec2 delete-security-group --group-id $sg_id; then
+                echo "Successfully deleted security group: $sg_id"
+            else
+                echo "Failed to delete security group: $sg_id"
+                echo "Checking what's still referencing this security group..."
+
+                # Check for ENIs using this security group
+                aws ec2 describe-network-interfaces \
+                    --filters "Name=group-id,Values=$sg_id" \
+                    --query 'NetworkInterfaces[].[NetworkInterfaceId,Description]' \
+                    --output table
+            fi
+        done
+    fi
+
 
     # Delete non-default security groups
     echo "  Checking for Security Groups..."
