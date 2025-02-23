@@ -3,7 +3,7 @@ export AWS_PAGER=""
 
 #########################################################################################################################
 #########################################################################################################################
-# CREATE REPO NAME FOR ADMIN, FRONTEND, BACKEND WITH DATE AND VERSION
+# REPO_NAME: CREATE REPO NAME FOR ADMIN, FRONTEND, BACKEND WITH DATE AND VERSION
 #########################################################################################################################
 #########################################################################################################################
 
@@ -806,6 +806,28 @@ const Layout = () => {
 };
 
 export default Layout;
+EOL
+
+# Create the file src/vite-env.d.ts
+cat > vite-env.d.ts << EOL
+/// <reference types="vite/client" />
+
+declare module '*.svg' {
+  import React = require('react');
+  export const ReactComponent: React.FunctionComponent<React.SVGProps<SVGSVGElement>>;
+  const src: string;
+  export default src;
+}
+
+declare module '*.png' {
+  const content: string;
+  export default content;
+}
+
+declare module '*.jpg' {
+  const content: string;
+  export default content;
+}
 EOL
 
 # Create HomePage component
