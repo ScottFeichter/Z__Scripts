@@ -836,8 +836,12 @@ import { motion } from 'framer-motion';
 import { useSelector, useDispatch } from 'react-redux';
 import { increment, decrement } from '../store/counterSlice';
 import { RootState } from '../store';
-import reactLogo from '../assets/react.svg';
+// Update these imports to use the correct path
+import reactLogo from '@/assets/react.svg';
+// For Vite's logo, it should be imported from public directory
 import viteLogo from '/vite.svg';
+import { FC } from 'react';
+
 
 const HomePage = () => {
   const count = useSelector((state: RootState) => state.counter.value);
