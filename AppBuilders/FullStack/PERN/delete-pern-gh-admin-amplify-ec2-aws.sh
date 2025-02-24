@@ -24,6 +24,7 @@
 need to have the create script output a text file in the admiend with information for all the services
 
 VPC
+Double check RDS DB subnet group gets deleted
 EBS
 S3 Bucket for admiend
 Amplify App
