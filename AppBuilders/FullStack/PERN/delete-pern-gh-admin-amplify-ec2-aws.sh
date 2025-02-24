@@ -28,4 +28,4 @@ EBS
 S3 Bucket for admiend
 Amplify App
 GitHub Repos
-Directories
+Delete Directories
