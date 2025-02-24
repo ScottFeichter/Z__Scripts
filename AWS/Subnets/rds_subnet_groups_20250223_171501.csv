@@ -1,0 +1,7 @@
+QUOTE,SUBNET GROUP NAME,VPC ID,STATUS,DESCRIPTION,SUBNETS
+"'","default","vpc-00bfcebc54619c757","Complete","default","subnet-00632536874ef4670;subnet-0f8c3a1ccd3c2db12;subnet-04595e189e272daec;subnet-0d36ebd2ba22c75f7;subnet-035137ff09981db78;subnet-03cd4025aab688e7a"
+"'","do-reg-mi-02-20-2025-4-db-subnet-group","vpc-080b9065a30647f92","Complete","Subnet group for PostgreSQL RDS","subnet-0c2a82406e6e44831;subnet-067ecc13d0831a2d0"
+"'","neorgp-02-18-2025-2-db-subnet-group","vpc-0b65c101d334323c3","Complete","Subnet group for PostgreSQL RDS","subnet-0b595f292ffe0b8fe;subnet-0427ce213d9694826"
+"'","neorgp-02-21-2025-4-db-subnet-group","vpc-005b1efeb668063ed","Complete","Subnet group for PostgreSQL RDS","subnet-010a7a051900a6957;subnet-02cf494e17af214ff"
+"'","neorgp-02-23-2025-1-db-subnet-group","vpc-0c2b2c1ae314995bb","Complete","Subnet group for PostgreSQL RDS","subnet-0df02d40b3c0ddb32;subnet-02a007855af72c1dd"
+"'","test-02-23-2025-4-db-subnet-group","vpc-08c8fe5e0bb8e5396","Complete","Subnet group for PostgreSQL RDS","subnet-08780437ad47e80b2;subnet-0bcacc98a201deaa3"

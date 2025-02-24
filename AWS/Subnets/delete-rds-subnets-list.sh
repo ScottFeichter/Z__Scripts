@@ -4,8 +4,11 @@ export AWS_PAGER=""  # Disable the AWS CLI pager
 
 # Array of subnet group names - change them to suit your needs
 SUBNET_GROUPS=(
-mysubnetgroup1
-mysubnetgroup2
+do-reg-mi-02-20-2025-4-db-subnet-group
+neorgp-02-18-2025-2-db-subnet-group
+neorgp-02-21-2025-4-db-subnet-group
+neorgp-02-23-2025-1-db-subnet-group
+test-02-23-2025-4-db-subnet-group
 )
 
 # Function to delete an RDS subnet group
