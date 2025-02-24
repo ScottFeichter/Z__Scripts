@@ -529,7 +529,7 @@ fi
 # Create hooks directory if it doesn't exist
 mkdir -p .git/hooks
 
-# Create post-push hook
+# Create pre-push hook
 echo "Creating pre-push hook..."
 cat > .git/hooks/pre-push << EOL
 #!/bin/bash

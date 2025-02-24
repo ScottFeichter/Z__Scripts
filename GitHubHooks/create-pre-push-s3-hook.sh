@@ -73,9 +73,9 @@ BUCKET_NAME=$1
 # Create hooks directory if it doesn't exist
 mkdir -p .git/hooks
 
-# Create post-push hook
-echo "Creating post-push hook..."
-cat > .git/hooks/post-push << EOL
+# Create pre-push hook
+echo "Creating pre-push hook..."
+cat > .git/hooks/pre-push << EOL
 #!/bin/bash
 
 # Log start of sync
@@ -103,15 +103,15 @@ aws s3 ls s3://${BUCKET_NAME} --recursive --human-readable --summarize | tail -n
 EOL
 
 # Make the hook executable
-chmod +x .git/hooks/post-push
+chmod +x .git/hooks/pre-push
 
 # Verify the hook was created
-if [ -x .git/hooks/post-push ]; then
-    echo "Successfully created and configured post-push hook"
-    echo "Hook location: .git/hooks/post-push"
+if [ -x .git/hooks/pre-push ]; then
+    echo "Successfully created and configured pre-push hook"
+    echo "Hook location: .git/hooks/pre-push"
     echo "The hook will sync to S3 bucket: ${BUCKET_NAME}"
 else
-    echo "Failed to create post-push hook"
+    echo "Failed to create pre-push hook"
     exit 1
 fi
 
@@ -134,4 +134,4 @@ if ! aws s3 ls "s3://${BUCKET_NAME}" &> /dev/null; then
     exit 1
 fi
 
-echo "Setup complete! The post-push hook will now sync your repository to S3 after each push."
+echo "Setup complete! The pre-push hook will now sync your repository to S3 after each push."
