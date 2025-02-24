@@ -1392,6 +1392,7 @@ cat > package.json << EOL
 {
   "name": "\${BACKEND_REPO_NAME}",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
