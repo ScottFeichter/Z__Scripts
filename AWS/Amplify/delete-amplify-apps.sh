@@ -4,14 +4,7 @@ export AWS_PAGER=""  # Disable the AWS CLI pager so we don't get json output
 
 # Array of Amplify app IDs - change them to suit your needs
 APPS=(
-d1uphoh7myr402
-d2tqocrnazuw3g
-d26hnkizz7i9f2
-d3obplo9qahw3y
-d3a3z6cdkefh2d
-d3h3h8u9u16a4
-d34iave1v75sq7 
-
+d3dkathqeduquo
 )
 
 # Function to delete an Amplify app
@@ -25,12 +18,12 @@ delete_app() {
         aws amplify delete-app --app-id "$app_id"
 
         if [ $? -eq 0 ]; then
-            echo "  Successfully deleted app: $app_id"
+            echo "Successfully deleted app: $app_id"
         else
-            echo "  Failed to delete app: $app_id"
+            echo "Failed to delete app: $app_id"
         fi
     else
-        echo "  App does not exist: $app_id"
+        echo "App does not exist: $app_id"
     fi
     echo "----------------------------------------"
 }
