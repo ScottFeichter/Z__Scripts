@@ -1319,13 +1319,18 @@ echo " "
 # BACKEND: CREATES NODE BACKENDEND THEN CREATES GIT LOCAL AND REMOTE AND PUSHES
 #########################################################################################################################
 #########################################################################################################################
-echo "CREATING BACKEND..."
-echo " "
+
 
 # Create the final repo name with the appropriate version
+echo "CREATING BACKEND..."
 BACKEND_REPO_NAME="$BACKEND_NAME_ARG-$CREATE_DATE-$REPO_VERSION"
+echo " "
+
+
+###################################################################################################
 
 # Create directory and initialize repository
+echo "Creating project directory and git local and remote..."
 mkdir "$BACKEND_REPO_NAME"
 cd "$BACKEND_REPO_NAME"
 
@@ -1345,164 +1350,114 @@ git branch -M main
 git push -u origin main
 
 
-# Initialize npm project
-echo " "
-echo "Initializing npm project..."
-npm init -y
+###################################################################################################
 
-# Install dependencies
-echo "Installing dependencies..."
-npm install \
-    bcryptjs \
-    cookie-parser \
-    cors \
-    csurf \
-    dotenv \
-    express \
-    express-async-errors \
-    express-validator \
-    helmet \
-    jsonwebtoken \
-    morgan \
-    per-env \
-    pg \
-    sequelize \
-    sequelize-cli
+# Create directory and file structure
+echo "Creating directory and file structure..."
+mkdir src
+  mkdir src/bin
+    touch www
 
-# Install development dependencies
-echo "Installing development dependencies..."
-npm install --save-dev \
-    @types/bcryptjs \
-    @types/cookie-parser \
-    @types/cors \
-    @types/csurf \
-    @types/express \
-    @types/helmet \
-    @types/jsonwebtoken \
-    @types/morgan \
-    @types/node \
-    @types/sequelize \
-    dotenv-cli \
-    nodemon \
-    ts-node \
-    typescript
+  mkdir src/config
+    touch src/config/database.js
+    touch src/config/index.ts
+    touch src/config/sequelize-cli.js
 
-# Update package.json with scripts and dependencies
-cat > package.json << EOL
-{
-  "name": "\${BACKEND_REPO_NAME}",
-  "version": "1.0.0",
-  "type": "module",
-  "description": "",
-  "main": "dist/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "sequelize": "sequelize",
-    "sequelize-cli": "sequelize-cli",
-    "start": "per-env",
-    "start:development": "nodemon ./src/bin/www",
-    "start:production": "node ./dist/bin/www",
-    "build": "tsc"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
-}
-EOL
+  mkdir src/database
+    mkdir src/database/migrations
+    mkdir src/database/models
+    mkdir src/database/seeders
+    touch src/database/index.ts
 
-# Create directory structure
-mkdir -p src/bin src/config src/db/migrations src/db/models src/db/seeders src/routes src/utils dist
+  mkdir src/dist
+    touch src/app.js
+    touch src/psql-setup-script.js
 
-# Create tsconfig.json
-cat > tsconfig.json << EOL
-{
-  "compilerOptions": {
-    "target": "ES6",
-    "module": "CommonJS",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
-    "esModuleInterop": true
-  }
-}
-EOL
+  mkdir src/docs
+    mkdir src/docs/schema
+    touch src/docs/auth.yaml
+    touch src/docs/user.yaml
+      touch src/docs/schema/auth.schema.yaml
+      touch src/docs/schema/user.schema.yaml
 
-# Create main application file
-cat > src/app.ts << EOL
-import express from 'express';
-import morgan from 'morgan';
-import cors from 'cors';
-import csurf from 'csurf';
-import helmet from 'helmet';
-import cookieParser from 'cookie-parser';
-import { environment } from './config';
-import routes from './routes';
-import { ValidationError } from 'sequelize';
+  mkdir src/interfaces
+    touch src/interfaces/user.interfaces.ts
 
-// =================IMPORTS END======================//
+  mkdir src/logs
+  mkdir src/middlewares
+    touch src/uath.middleware.ts
+    touch src/jwt.service.ts
 
-const isProduction = environment === 'production';
+  mkdir src/modules
+    mkdir src/modules/auth
+      touch src/modules/auth.controller.ts
+      touch src/modules/auth.repo.ts
+      touch src/modules/auth.routes.ts
+      touch src/modules/auth.service.ts
+      touch src/modules/auth.validator.ts
+    mkdir src/modules/user
+      touch src/modules/user.controller.ts
+      touch src/modules/user.repo.ts
+      touch src/modules/user.routes.ts
+      touch src/modules/user.service.ts
+      touch src/modules/user.validator.ts
+    mkdir src/modules/etc
 
-const app = express();
+  mkdir src/routes
+    touch src/routs/index.ts
+    touch src/routs/routes.ts DONT THINK I NEED BOTH WILL CHECK
 
-// =================MIDDLE WARE START======================//
+  mkdir src/types
+    mkdir src/express
+      touch src/types/express/index.d.ts
 
-app.use(morgan('dev'));
-app.use(cookieParser());
-app.use(express.json());
-
-if (!isProduction) {
-    app.use(cors());
-}
-
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
-app.use(
-    csurf({
-        cookie: {
-            secure: isProduction,
-            sameSite: isProduction && "Lax",
-            httpOnly: true,
-        },
-    })
-);
-
-app.use(routes);
-
-// =================MIDDLE WARE END======================//
-
-app.use((_req, _res, next) => {
-    const err: any = new Error("The requested resource couldn't be found.");
-    err.title = "Resource Not Found";
-    err.errors = ["The requested resource couldn't be found."];
-    err.status = 404;
-    next(err);
-});
-
-app.use((err: any, _req, _res, next) => {
-    if (err instanceof ValidationError) {
-        err.errors = err.errors.map((e) => e.message);
-        err.title = 'Validation error';
-    }
-    next(err);
-});
-
-app.use((err: any, _req, res, _next) => {
-    res.status(err.status || 500);
-    console.error(err);
-    res.json({
-        title: err.title || 'Server Error',
-        message: err.message,
-        errors: err.errors,
-        stack: isProduction ? null : err.stack,
-    });
-});
-
-export default app;
-EOL
+  mkdir src/utils
+    touch src/utils/custom-error.ts
+    touch src/utils/error-handler.ts
+    touch src/utils/logger.ts
+    touch src/utils/swagger.ts
 
 
+  touch src/server.js
 
-# Create www file
+  mkdir tests
+    mkdir tests/middleware
+      touch src/tests/middleware/auth.middleware.test.ts
+      touch src/tests/middleware/jwt.service.test.ts
+    mkdir tests/modules
+      mkdir auth
+        touch src/tests/modules/auth/auth.controller.test.ts
+        touch src/tests/modules/auth/auth.service.test.ts
+      mkdir user
+        touch src/tests/modules/user/user.controller.test.ts
+        touch src/tests/modules/user/user.service.test.ts
+
+touch env.example
+touch env.testing
+touch env.development
+touch env.production
+
+touch .eslintignnore
+touch .eslintrc
+
+touch .gitignore
+touch .npmignore
+
+touch .prettierrc.json
+touch .sequelizerc
+
+touch jest.config.js
+touch LICENSE
+
+touch nodemon.json
+touch buildspec.yml
+touch tsconfig.json
+
+
+###################################################################################################
+
+# Creating www
+echo "Creating src/bin/www and making it executable..."
 cat > src/bin/www << EOL
 #!/usr/bin/env node
 
@@ -1527,49 +1482,350 @@ EOL
 # Make www executable
 chmod +x src/bin/www
 
-# Create config file
-cat > src/config/index.js << EOL
-export default {
-    environment: process.env.NODE_ENV || 'development',
-    port: process.env.PORT || 5000,
-    db: {
-        username: process.env.DB_USERNAME || '',
-        password: process.env.DB_PASSWORD || '',
-        database: process.env.DB_DATABASE || '',
-        host: process.env.DB_HOST || '',
-    },
-    jwtConfig: {
-        secret: process.env.JWT_SECRET || '',
-        expiresIn: process.env.JWT_EXPIRES_IN || '604800',
-    },
+
+###################################################################################################
+
+# Creating src/config/database.js
+echo "Creating src/config/database.js ..."
+cat < src/config/database.js << EOL
+{
+  "development": {
+    "username": "root",
+    "password": null,
+    "database": "database_development",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "testing": {
+    "username": "root",
+    "password": null,
+    "database": "database_test",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "root",
+    "password": null,
+    "database": "database_production",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  }
+}
+EOL
+
+
+###################################################################################################
+
+# Creating src/config/index.ts
+echo "Creating src/config/index.ts ..."
+cat < src/config/index.ts << EOL
+import { config } from 'dotenv';
+
+const envFile = `.env.${process.env.NODE_ENV || 'development'}`;
+config({ path: envFile });
+
+export const {
+    PORT,
+    NODE_ENV,
+    BASE_URL,
+    JWT_ACCESS_TOKEN_SECRET,
+    JWT_REFRESH_TOKEN_SECRET,
+} = process.env;
+
+export const {
+    DB_PORT,
+    DB_USERNAME,
+    DB_PASSWORD,
+    DB_NAME,
+    DB_HOST,
+    DB_DIALECT,
+} = process.env;
+EOL
+
+
+###################################################################################################
+
+# Creating src/config/sequelize-cli.js
+echo "Creating src/config/sequelize-cli.js ..."
+cat < src/config/sequelize-cli.js << EOL
+const { config } = require('dotenv');
+config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
+
+const { DB_PORT, DB_USERNAME, DB_PASSWORD, DB_NAME, DB_HOST, DB_DIALECT } =
+    process.env;
+
+module.exports = {
+    username: DB_USERNAME,
+    password: DB_PASSWORD,
+    database: DB_NAME,
+    port: DB_PORT,
+    host: DB_HOST,
+    dialect: DB_DIALECT,
+    migrationStorageTableName: 'sequelize_migrations',
+    seederStorageTableName: 'sequelize_seeds',
 };
 EOL
 
-# Create database config file
-cat > src/config/database.js << EOL
-import config from './index';
 
-export default {
-    development: {
-        username: config.db.username,
-        password: config.db.password,
-        database: config.db.database,
-        host: config.db.host,
-        dialect: 'postgres',
-    },
-    production: {
-        use_env_variable: 'DATABASE_URL',
-        dialect: 'postgres',
-        seederStorage: 'sequelize',
-        dialectOptions: {
-            ssl: {
-                require: true,
-                rejectUnauthorized: false,
+
+###################################################################################################
+
+# Creating src/database/migrations/20241025023422-create-user.js
+echo "Creating src/database/migrations/20241025023422-create-user.js..."
+cat < src/database/migrations/20241025023422-create-user.js << EOL
+'use strict';
+
+/** @type {import('sequelize-cli').Migration} */
+module.exports = {
+    async up(queryInterface, Sequelize) {
+        await queryInterface.createTable('users', {
+            id: {
+                type: Sequelize.UUID,
+                defaultValue: Sequelize.literal('uuid_generate_v4()'),
+                primaryKey: true,
             },
-        },
+            email: {
+                type: Sequelize.STRING(45),
+                allowNull: false,
+                unique: true,
+            },
+            name: {
+                type: Sequelize.STRING(45),
+                allowNull: false,
+            },
+            username: {
+                type: Sequelize.STRING(45),
+                allowNull: true,
+                unique: true,
+            },
+            password: {
+                type: Sequelize.STRING(255),
+                allowNull: false,
+            },
+            created_at: {
+                type: Sequelize.DATE,
+                allowNull: false,
+                defaultValue: Sequelize.NOW,
+            },
+            updated_at: {
+                type: Sequelize.DATE,
+                allowNull: false,
+                defaultValue: Sequelize.NOW,
+            },
+        });
+    },
+
+    async down(queryInterface, Sequelize) {
+        await queryInterface.dropTable('users');
     },
 };
 EOL
+
+
+
+
+
+
+
+
+
+
+###################################################################################################
+
+# Create server.ts
+echo "Creating server.ts..."
+cat > src/server.ts << EOL
+// =================IMPORTS START======================//
+import express from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import csurf from 'csurf';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import { environment } from './config';
+import routes from './routes';
+import { ValidationError } from 'sequelize';
+
+
+import router from '@routes/routes';
+import logger from '@utils/logger';
+import { DB } from '@database/index';
+import { PORT } from './config';
+import { errorHandler } from './utils/error-handler';
+import { swaggerSpec, swaggerUi } from './utils/swagger';
+
+
+
+// =================VARIABLES START======================//
+
+const isProduction = environment === 'production';
+const isDevelopment = environment === 'development';
+const isTesting = environment === 'testing';
+
+const appServer = express();
+const port = PORT;
+
+const corsOptions = {
+    origin: '*',
+    optionsSuccessStatus: 200,
+};
+
+
+// =================MIDDLE WARE START======================//
+
+
+// morgan and cookieParser
+appServer.use(morgan('dev'));
+appServer.use(cookieParser());
+
+
+// Enable CORS if productions
+if (!isProduction) {
+    appServer.use(cors(corsOptions));
+    appServer.options('*', cors(corsOptions));
+}
+
+
+// helmet and csurf
+appServer.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+appServer.use(
+    csurf({
+        cookie: {
+            secure: isProduction,
+            sameSite: isProduction && "Lax",
+            httpOnly: true,
+        },
+    })
+);
+
+
+// routes
+appServer.use(routes);
+
+
+// Middleware for parsing JSON and URL-encoded bodies
+appServer.use(express.json());
+appServer.use(express.urlencoded({ extended: true }));
+
+appServer.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+
+// Use the router with the /api prefix
+appServer.use('/api', router);
+appServer.use(errorHandler);
+
+appServer.all('*', (req, res) => {
+    res.status(404).json({ message: 'Sorry! Page not found' });
+});
+
+
+
+
+// =================ROUTES START======================//
+
+
+appServer.use((req, res, next) => {
+    const startTime = Date.now();
+
+    res.on('finish', () => {
+        const duration = Date.now() - startTime;
+        const message = `${req.method} ${req.originalUrl} ${res.statusCode} - ${duration}ms`;
+
+        if (res.statusCode >= 500) {
+            logger.error(message);
+        } else if (res.statusCode >= 400) {
+            logger.warn(message);
+        } else {
+            logger.info(message);
+        }
+    });
+
+    next();
+});
+
+
+
+
+
+
+appServer.use((_req, _res, next) => {
+    const err: any = new Error("The requested resource couldn't be found.");
+    err.title = "Resource Not Found";
+    err.errors = ["The requested resource couldn't be found."];
+    err.status = 404;
+    next(err);
+});
+
+appServer.use((err: any, _req, _res, next) => {
+    if (err instanceof ValidationError) {
+        err.errors = err.errors.map((e) => e.message);
+        err.title = 'Validation error';
+    }
+    next(err);
+});
+
+appServer.use((err: any, _req, res, _next) => {
+    res.status(err.status || 500);
+    console.error(err);
+    res.json({
+        title: err.title || 'Server Error',
+        message: err.message,
+        errors: err.errors,
+        stack: isProduction ? null : err.stack,
+    });
+});
+
+
+
+
+// =================SEQUELIZE CONNECT START======================//
+
+
+DB.sequelize
+    .authenticate()
+    .then(() => {
+        logger.info('Database connected successfully!');
+        appServer.listen(port, () => {
+            logger.info(`Server is running on http://localhost:${port}`);
+        });
+    })
+    .catch(error => {
+        logger.error('Unable to connect to the database:', error);
+    });
+
+
+
+export default appServer;
+EOL
+
+
+
+
+
+###################################################################################################
+
+# Create .env.example
+echo "Creating .env.example..."
+cat > .env.example << EOL
+PORT=5000
+NODE_ENV=env
+BASE_URL=base_url
+
+#postgres configuration
+DB_PORT=db_port
+DB_USERNAME=db_username
+DB_PASSWORD=db_password
+DB_NAME=db_name
+DB_HOST=host
+DB_DIALECT=dialect
+
+JWT_ACCESS_TOKEN_SECRET=JWT secret
+JWT_EXPIRES_IN=604800
+EOL
+
+
+
+###################################################################################################
 
 # Function to generate a secure password
 generate_secure_password() {
@@ -1595,88 +1851,287 @@ SECURE_DB_PASSWORD_BASE=$(generate_secure_password)
 SECURE_DB_PASSWORD=$SECURE_DB_PASSWORD_BASE
 
 
-# Create .env file with secure password
-cat > .env << EOL
+# Create .env.testing file with secure password
+echo "Creating .env.testing..."
+cat > .env.testing << EOL
 PORT=5000
+NODE_ENV=testing
+BASE_URL=http://localhost:5000/api
+
+#postgres configuration
+DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=${SECURE_DB_PASSWORD}
-DB_DATABASE=your_database_name
+DB_NAME=dbtest
 DB_HOST=localhost
-JWT_SECRET=your_jwt_secret_here
+
+#Sequelize needs to know what RDBMS we use by reading it as dialect. In this case, we use Postgres.
+DB_DIALECT=postgres
+
+# test jwt
+JWT_ACCESS_TOKEN_SECRET=1ZelYsfP1o1s0MphEr2R5f3r7pwYto7RJj
 JWT_EXPIRES_IN=604800
 EOL
 
-echo "Created .env file with secure database password"
 
 
-# Create .sequelizerc file
+
+###################################################################################################
+
+# Create .eslintignore
+echo "Creating .eslintignore..."
+cat > .eslintignore << EOL
+dist/*
+coverage/*
+**/*.d.ts
+/src/public/
+/src/types/
+EOL
+
+
+
+
+
+###################################################################################################
+
+# Create .eslintrc
+echo "Creating .eslintrc..."
+cat > .eslintrc << EOL
+{
+    "parser": "@typescript-eslint/parser",
+    "extends": [
+        "prettier",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:prettier/recommended"
+    ],
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+    },
+    "rules": {
+        "@typescript-eslint/explicit-member-accessibility": 0,
+        "@typescript-eslint/explicit-function-return-type": 0,
+        "@typescript-eslint/no-parameter-properties": 0,
+        "@typescript-eslint/interface-name-prefix": 0,
+        "@typescript-eslint/explicit-module-boundary-types": 0,
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/ban-types": "off",
+        "@typescript-eslint/no-var-requires": "off",
+        "prettier/prettier": [
+            "error",
+            {
+                "endOfLine": "auto"
+            }
+        ]
+    }
+}
+EOL
+
+
+###################################################################################################
+
+# Create .gitignore
+echo "Creating .gitignore..."
+cat > .gitignore << EOL
+.DS_Store
+dist/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+pids
+*.pid
+*.seed
+*.pid.lock
+
+lib-cov
+
+coverage
+*.lcov
+
+.nyc_output
+
+.grunt
+
+bower_components
+
+.lock-wscript
+
+build/Release
+
+node_modules/
+jspm_packages/
+
+web_modules/
+
+*.tsbuildinfo
+
+.npm
+
+.eslintcache
+
+.stylelintcache
+
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+.node_repl_history
+
+*.tgz
+
+.yarn-integrity
+
+.env
+.env.development
+.env.production
+.env.testing
+
+.cache
+.parcel-cache
+
+.next
+out
+
+.nuxt
+dist
+
+.cache/
+
+.vuepress/dist
+
+.temp
+.cache
+
+.docusaurus
+
+.serverless/
+
+.fusebox/
+
+.dynamodb/
+
+.tern-port
+
+.vscode-test
+
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+EOL
+
+
+
+
+
+
+
+###################################################################################################
+
+# Create .npmignore
+echo "Creating .npmignore..."
+cat > .npmignore << EOL
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Coverage and testing related
+coverage/
+*.lcov
+.nyc_output/
+
+# Build and distribution folders
+build/
+dist/
+.cache/
+out/
+.next/
+.nuxt/
+.vuepress/dist/
+.serverless/
+.fusebox/
+.dynamodb/
+
+# Miscellaneous
+node_modules/
+jspm_packages/
+web_modules/
+
+# Editor specific
+.vscode/
+
+# Package manager cache
+.npm/
+.yarn/
+.pnp.*
+
+# Environment files
+.env
+.env.development
+.env.production
+
+# Misc
+*.tsbuildinfo
+*.tgz
+EOL
+
+
+
+###################################################################################################
+
+# Create .prettierrc.json
+echo "Creating .prettierrc.json..."
+cat > .prettierrc.json << EOL
+{
+  "arrowParens": "avoid",
+  "bracketSameLine": true,
+  "bracketSpacing": true,
+  "tabWidth": 4,
+  "singleQuote": true,
+  "trailingComma": "all"
+}
+EOL
+
+
+
+
+
+###################################################################################################
+
+# Create .sequelizerc
+echo "Creating .sequelizerc..."
 cat > .sequelizerc << EOL
 const path = require('path');
 
 module.exports = {
-  'config': path.resolve('config', 'database.js'),
-  'models-path': path.resolve('db', 'models'),
-  'seeders-path': path.resolve('db', 'seeders'),
-  'migrations-path': path.resolve('db', 'migrations')
+  config: path.resolve('src/config', 'sequelize-cli.js'),
+  'models-path': path.resolve('src/database', 'models'),
+  'seeders-path': path.resolve('src/database', 'seeders'),
+  'migrations-path': path.resolve('src/database',  'migrations'),
 };
 EOL
 
-# Create psql setup script
-cat > psql-setup-script.ts << EOL
-import { sequelize } from './db/models';
-
-(async () => {
-    const schemas = await sequelize.showAllSchemas({ logging: false });
-    if (!schemas.includes(process.env.SCHEMA)) {
-        await sequelize.createSchema(process.env.SCHEMA);
-    }
-})();
-EOL
-
-# Create routes index file
-cat > src/routes/index.ts << EOL
-import express from 'express';
-
-const router = express.Router();
-
-// TWO TEST ROUTES AND A RESTORE
-
-router.get('/api/test', (req, res) => {
-    res.json({ message: 'Success' });
-});
-
-router.get('/hello/world', (req: Request, res: Response) => {
-  res.cookie('XSRF-TOKEN', req.csrfToken());
-  res.send('Hello World!');
-});
-
-router.get('/api/csrf/restore', (req: Request, res: Response) => {
-  const csrfToken = req.csrfToken();
-  res.cookie('XSRF-TOKEN', csrfToken);
-  res.status(200).json({
-    'XSRF-Token': csrfToken,
-  });
-});
 
 
-export default router;
-EOL
-
-# Create .gitignore
-cat > .gitignore << EOL
-node_modules
-.env
-.DS_Store
-dist/
-EOL
-
-echo "Finished .gitignore"
-
-# Initialize Sequelize
-npx sequelize-cli init || true
+###################################################################################################
 
 # Create buildspec.yml for AWS CodeBuild
-echo " "
 echo "Creating buildspec.yml for AWS CodeBuild"
 cat > buildspec.yml << EOL
 version: 0.2
@@ -1698,9 +2153,375 @@ artifacts:
     - '**/*'
 EOL
 
+
+
+###################################################################################################
+
+# Create jest.config.js
+echo "Creating jest.config.js..."
+cat > jest.config.js << EOL
+module.exports = {
+    preset: "ts-jest",
+    testEnvironment: "node",
+    moduleFileExtensions: ["ts", "js"],
+    transform: {
+        "^.+\\.ts$": "ts-jest",
+    },
+    moduleNameMapper: {
+        "^@/(.*)$": "<rootDir>/src/$1",
+    },
+};
+EOL
+
+
+
+
+###################################################################################################
+
+# Create LICENSE
+echo "Creating LICENSE..."
+cat > LICENSE << EOL
+MIT License
+
+Copyright (c) 2025 Pius Restiantoro with modifications by Scott Feichter
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+EOL
+
+
+
+
+###################################################################################################
+
+# Create nodemon.json
+echo "Creating nodemon.json..."
+cat > nodemon.json << EOL
+{
+    "watch": ["src", ".env"],
+    "ext": "js,ts,json,yaml",
+    "ignore": ["src/logs/*", "src/**/*.{spec,test}.ts"],
+    "exec": "ts-node -r tsconfig-paths/register --transpile-only src/server.ts"
+}
+EOL
+
+
+
+
+###################################################################################################
+
+# Create package.json with scripts and dependencies
+echo "Creating package.json..."
+cat > package.json << EOL
+{
+    "name": "${BACKEND_REPO_NAME}",
+    "version": "1.0.0",
+    "description": "Express-Typescript-Postgres-Sequelize-AWSRDS",
+    "main": "server.ts",
+    "scripts": {
+        "test": "jest",
+        "test:watch": "jest --watch",
+        "sequelize": "sequelize",
+        "sequelize-cli": "sequelize-cli",
+        "start": "npm run build && node dist/server.js",
+        "dev": "nodemon",
+        "start:development": "nodemon ./src/bin/www",
+        "start:production": "node ./dist/bin/www",
+        "build": "tsc && tsc-alias && echo 'Build Finished! 👍'",
+        "lint": "eslint --ignore-path .gitignore --ext .ts src/",
+        "lint:fix": "npm run lint -- --fix",
+        "migration:generate": "sequelize migration:generate --name",
+        "migration": "sequelize db:migrate"
+    },
+    "author": "Pius Restiantoro and Scott Feichter",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/pius706975/express-typescript-sequelize-boilerplate.git"
+    },
+    "dependencies": {
+        "bcrypt": "^5.1.1",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.5",
+        "express": "^4.21.1",
+        "joi": "^17.13.3",
+        "jsonwebtoken": "^9.0.2",
+        "pg": "^8.13.0",
+        "pg-hstore": "^2.3.4",
+        "sequelize": "^6.37.4",
+        "sequelize-typescript": "^2.1.6",
+        "swagger-jsdoc": "^6.2.8",
+        "swagger-ui-express": "^5.0.1",
+        "tsconfig-paths": "^4.2.0",
+        "winston": "^3.15.0",
+        "winston-daily-rotate-file": "^5.0.0"
+    },
+    "devDependencies": {
+        "@types/bcrypt": "^5.0.2",
+        "@types/cors": "^2.8.17",
+        "@types/express": "^5.0.0",
+        "@types/jest": "^29.5.14",
+        "@types/jsonwebtoken": "^9.0.7",
+        "@types/node": "^22.10.5",
+        "@types/pg": "^8.11.10",
+        "@types/sequelize": "^4.28.20",
+        "@types/swagger-jsdoc": "^6.0.4",
+        "@types/swagger-ui-express": "^4.1.6",
+        "@typescript-eslint/eslint-plugin": "^5.29.0",
+        "@typescript-eslint/parser": "^5.29.0",
+        "eslint": "^8.20.0",
+        "eslint-config-prettier": "^8.5.0",
+        "eslint-plugin-prettier": "^4.2.1",
+        "jest": "^29.7.0",
+        "nodemon": "^3.1.7",
+        "prettier": "^2.7.1",
+        "sequelize-cli": "^6.6.2",
+        "supertest": "^7.0.0",
+        "ts-jest": "^29.2.5",
+        "ts-node": "^10.9.2",
+        "tsc-alias": "^1.8.10",
+        "typescript": "^5.7.3"
+    }
+}
+EOL
+
+###################################################################################################
+
+# Create README.md
+echo "Creating EADME.md..."
+cat > README.md << EOL
+# I used Pius' backend boilerplate with some small modifications.
+
+# Here is his README.md :
+
+
+# 📦 Backend Boilerplate With Express.js - Typescript - Sequelize
+
+This is a simple boilerplate with **Express.js** with a ready-to-use configuration for backend development. You can adjust it according to your requirements.
+
+---
+
+## ✨ Features
+- ⚡ [**Express.js**](https://expressjs.com/) as the backend framework
+- 📋 [**Swagger**](https://swagger.io/docs/) for API documentations
+- 🛠 [**Typescript**](https://www.typescriptlang.org/docs/) for strong type support
+- 📄 **Linting** with [**ESlint**](https://eslint.org/docs/latest/) and [**Prettier**](https://prettier.io/docs/en/)
+
+---
+
+## 🚀 Prerequisite
+
+Make sure you have installed the following tools:
+
+- **Node.js** >= v18.x.x
+- **npm**
+
+---
+
+## 📥 Installation
+
+1. Clone repository:
+
+   ```bash
+   git clone https://github.com/pius706975/express-typescript-sequelize-boilerplate.git
+   ```
+
+2. Install the dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Create `.env.development` to store the environment configuration:
+
+   ```bash
+   .env.development
+   ```
+
+4. Fill the `.env.development` file based on your requirements:
+
+   ```
+    PORT = port number
+    NODE_ENV = env
+    BASE_URL = base url
+
+    DB_PORT = db port
+    DB_USERNAME = db username
+    DB_PASSWORD = db password
+    DB_NAME = db name
+    DB_HOST = host
+    DB_DIALECT = dialect
+
+    JWT_ACCESS_TOKEN_SECRET = JWT secret
+   ```
+
+## 🏃 Run the server and the test
+
+Run the server in the development mode:
+
+```bash
+npm run dev
+```
+
+Or in the production mode
+
+```bash
+npm start
+```
+
+Run the test:
+- Test all function
+   ```bash
+   npm run test
+   ```
+- Test by selecting the file
+   ```bash
+   npm run test path-to-your-test-file/file.test.ts
+   ```
+---
+
+## 🛠 Additional
+
+- **Linting and code formatting:**
+
+  ```bash
+  npm run lint      # Linting check
+  npm run lint:fix  # Formatting code with prettier
+  ```
+
+- **Creating DB table:**
+
+  ```bash
+  npm run migration:generate --name "create-table-name"
+  ```
+---
+
+## 📚 API Documentation
+
+Access swagger documentations: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
+
+Swagger will automatically return the documentations based on route file annotation.
+
+---
+
+## 📂 Project structure
+
+Let's have a look at this structure:
+
+```
+├── /node_modules
+├── /src
+│   ├── /config          # Base configuration such as .env key and sequelize-cli configuration
+│   ├── /database
+│   │   ├── /migrations  # DB migration files to migrate our DB tables
+│   │   └── /models      # DB model files that will be used in the development
+│   ├── /docs            # Swagger documentations
+│   ├── /interfaces      # Interfaces
+│   ├── /logs            # Access logs
+│   ├── /middleware      # App middlewares
+│   ├── /modules         # App modules
+│   │   ├── /auth        #
+│   │   ├── /user        # These module directories will store repo, service, controller, routes, and validator files.
+│   │   └── /etc         #
+│   ├── /routes          # Main route file that store all of the module routes
+│   ├── /types           # typescript support
+│   ├── /utils           # Utils
+│   └── server.js        # Entry point of the app
+├── /tests               # Unit test main folder
+│   ├── /middleware      # Middleware tests
+│   ├── /modules         # Modules tests
+├── .env.development     # Development environment variables
+├── package.json         # Dependencies and scripts
+└── README.md            # Project documentation
+```
+
+---
+
+## 🔗 The example of API Request
+
+**POST** a request to `/api/example`:
+
+```bash
+curl --request POST   --url http://localhost:5000/api/auth/signup
+```
+
+Response:
+
+```json
+{
+    "message": "Successfully signed up"
+}
+```
+
+---
+
+## 👨‍💻 Contributor
+
+- Pius Restiantoro - [GitHub](https://github.com/pius706975)
+EOL
+
+
+###################################################################################################
+
+# Create tsconfig.json
+echo "Creating tsconfig.json..."
+cat > tsconfig.json << EOL
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "baseUrl": "./src",
+        "paths": {
+            "@/*": ["*"],
+            "@routes/*": ["routes/*"],
+            "@database/*": ["database/*"],
+            "@utils/*": ["utils/*"],
+            "@types/*": ["types/*"],
+            "@modules/*": ["modules/*"]
+        },
+        "esModuleInterop": true,
+        "typeRoots": ["node_modules/@types"],
+        "strict": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "lib": ["esnext", "dom"]
+    },
+    "include": ["src/**/*.ts", "src/database/models/index.ts"],
+    "exclude": ["node_modules"]
+}
+EOL
+
+
+###################################################################################################
+
+# Install dependencies
+echo "Installing dependencies..."
+npm install
+
+
+###################################################################################################
+
 echo " "
-echo "Backend setup complete!"
+echo "BACKEND SETUP COMPLETE!"
 echo " "
+
 
 
 
