@@ -6,6 +6,14 @@ REPOS=(
     # BE SURE TO REPLACE THESE WITH THE NAMES YOU WANT TO DELETE
     # ALSO BE SURE YOU HAVE AT LEAST ON NAME IN HERE OR IT MIGHT DELETE EVERY REPO!!!!!!!!!!!!
     # YOU DON'T NEED THESE TO BE ENCLOSED IN QUOTES
+backend-testPius9-02-26-2025-1
+backend-testPius8-02-26-2025-1
+backend-testPius6-02-26-2025-1
+backend-testPius5-02-26-2025-1
+backend-testPius4-02-26-2025-1
+backend-testPius3-02-26-2025-1
+backend-testPius2-02-26-2025-1
+backend-testPius-02-25-2025-1
 backend-neorgp-02-23-2025-1
 frontend-neorgp-02-23-2025-1
 admiend-neorgp-02-23-2025-1
