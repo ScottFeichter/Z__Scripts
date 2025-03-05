@@ -11,7 +11,8 @@ DATABASES=(
     # BE SURE TO REPLACE THESE WITH THE NAMES YOU WANT TO DELETE
     # ALSO BE SURE YOU HAVE AT LEAST ONE NAME IN HERE OR IT MIGHT BE DANGEROUS
     # YOU DON'T NEED THESE TO BE ENCLOSED IN QUOTES
-test15_db_postgres_test
+test1_db_postgres
+test1_db_postgres_test
 )
 
 # Function to delete a PostgreSQL database
