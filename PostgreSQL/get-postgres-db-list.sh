@@ -20,18 +20,23 @@ echo "----------------------------------------"
 printf "%-50s %-20s %-20s\n" "DATABASE NAME" "OWNER" "SIZE"
 echo "----------------------------------------"
 
-# Query to get databases with their sizes and owners
+# Query to get databases with their sizes and owners, excluding specific databases
 psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -t -A -F $'\t' \
 -c "SELECT d.datname as database_name,
     pg_catalog.pg_get_userbyid(d.datdba) as owner,
     pg_size_pretty(pg_database_size(d.datname)) as size
 FROM pg_catalog.pg_database d
+WHERE d.datname NOT IN ('template_postgis', 'postgres', 'template1', 'template0')
 ORDER BY pg_database_size(d.datname) DESC;" | \
 while IFS=$'\t' read -r dbname owner size; do
     printf "%-50s %-20s %-20s\n" "$dbname" "$owner" "$size"
 done
 
+echo ""
+echo "NOTE: Default db's omitted from list (template_postgis, postgres, template0, template1)"
+echo ""
 echo "----------------------------------------"
+echo ""
 
 # Prompt user for CSV file creation
 read -p "Would you like to create a spreadsheet file with this list? (y/n): " answer
@@ -47,12 +52,13 @@ if [ "$answer" = "y" ]; then
     # Create header in CSV file
     echo "DATABASE NAME,OWNER,SIZE" > "$filename"
 
-    # Get the database list and save to CSV
+    # Get the database list and save to CSV, excluding specific databases
     psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -t -A -F $'\t' \
     -c "SELECT d.datname as database_name,
         pg_catalog.pg_get_userbyid(d.datdba) as owner,
         pg_size_pretty(pg_database_size(d.datname)) as size
     FROM pg_catalog.pg_database d
+    WHERE d.datname NOT IN ('template_postgis', 'postgres', 'template1', 'template0')
     ORDER BY pg_database_size(d.datname) DESC;" | \
     while IFS=$'\t' read -r dbname owner size; do
         echo "\"$dbname\",\"$owner\",\"$size\"" >> "$filename"

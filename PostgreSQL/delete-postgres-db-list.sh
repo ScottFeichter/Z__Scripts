@@ -11,8 +11,11 @@ DATABASES=(
     # BE SURE TO REPLACE THESE WITH THE NAMES YOU WANT TO DELETE
     # ALSO BE SURE YOU HAVE AT LEAST ONE NAME IN HERE OR IT MIGHT BE DANGEROUS
     # YOU DON'T NEED THESE TO BE ENCLOSED IN QUOTES
-test1_db_postgres
-test1_db_postgres_test
+
+test6_db_postgres_test
+test7_db_postgres
+test3_db_postgres
+test12_db_postgres
 )
 
 # Function to delete a PostgreSQL database
@@ -20,23 +23,26 @@ delete_database() {
     local db_name=$1
     echo "Processing database: $db_name"
 
+    # Export password for all psql commands
+    export PGPASSWORD="$DB_PASSWORD"
+
     # Check if database exists
-    if PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -lqt | cut -d \| -f 1 | grep -qw "$db_name"; then
+    if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -lqt | cut -d \| -f 1 | grep -qw "$db_name"; then
         echo "  Database exists. Proceeding with deletion..."
 
         # Check if database is being accessed
-        local connections=$(PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -t -c \
+        local connections=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -t -c \
             "SELECT count(*) FROM pg_stat_activity WHERE datname = '$db_name';")
 
         if [ "$connections" -gt "0" ]; then
             echo "  Warning: Database has active connections. Forcing disconnection..."
             # Force disconnect all users
-            PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -c \
+            psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -c \
                 "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$db_name';" &>/dev/null
         fi
 
         # Delete the database
-        if PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -c "DROP DATABASE \"$db_name\";" &>/dev/null; then
+        if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -c "DROP DATABASE \"$db_name\";" &>/dev/null; then
             echo "  Successfully deleted database: $db_name"
         else
             echo "  Failed to delete database: $db_name"
@@ -46,6 +52,7 @@ delete_database() {
     fi
     echo "----------------------------------------"
 }
+
 
 # Main execution
 echo "Starting PostgreSQL database deletion process..."
@@ -58,10 +65,11 @@ if ! command -v psql &>/dev/null; then
 fi
 
 # Test database connection
-if ! PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -c "SELECT 1;" &>/dev/null; then
+if ! psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -c "SELECT 1;" &>/dev/null; then
     echo "Error: Cannot connect to PostgreSQL. Please check your credentials and connection."
     exit 1
 fi
+
 
 # Display all databases that will be deleted
 echo "The following databases will be deleted:"
