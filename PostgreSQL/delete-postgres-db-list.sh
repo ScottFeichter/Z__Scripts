@@ -12,10 +12,22 @@ DATABASES=(
     # ALSO BE SURE YOU HAVE AT LEAST ONE NAME IN HERE OR IT MIGHT BE DANGEROUS
     # YOU DON'T NEED THESE TO BE ENCLOSED IN QUOTES
 
-test6_db_postgres_test
-test7_db_postgres
-test3_db_postgres
-test12_db_postgres
+test1_db_postgres
+backend_test6_03_05_2025_1_db_postgres
+backend_test7_03_05_2025_1_db_postgres
+backend_test9_03_05_2025_1_db_postgres
+backend_test10_03_05_2025_1_db_postgres
+backend_test13_03_05_2025_1_db_postgres
+backend_test14_03_05_2025_1_db_postgres
+backend_test_test9_03_05_2025_1_db_postgres
+backend_test_test13_03_05_2025_1_db_postgres
+backend_test_test10_03_05_2025_1_db_postgres
+test1_db_postgres_test
+backend_test11_03_05_2025_1_db_postgres
+backend_test_test6_03_05_2025_1_db_postgres
+backend_test_test11_03_05_2025_1_db_postgres
+backend_test_test7_03_05_2025_1_db_postgres
+backend_test_test14_03_05_2025_1_db_postgres
 )
 
 # Function to delete a PostgreSQL database
