@@ -4,7 +4,17 @@ export AWS_PAGER=""
 
 # Array of bucket names
 BUCKETS=(
-admiend-neorgp-02-23-2025-1-20250223165527-3e99779f
+admiend-perntest-03-06-2025-1-20250306185824-a7b28ce8
+admiend-perntest-03-06-2025-1-20250306191139-9fa1372e
+admiend-perntest-03-06-2025-2-20250306190119-636e1892
+admiend-perntest-03-06-2025-2-20250306191503-9444ffc7
+admiend-perntest-03-06-2025-3-20250306191554-790ff26b
+admiend-perntest-03-06-2025-4-20250306192417-5dd79ee4
+admiend-perntest-03-06-2025-5-20250306192818-8f9e92fd
+admiend-perntest-03-06-2025-6-20250306192929-8d2f5c8d
+admiend-perntest-03-06-2025-7-20250306193514-8eca6500
+admiend-perntest-03-06-2025-8-20250306193632-1470dbdf
+admiend-perntest-03-07-2025-1-20250307000125-0e654ee6
 )
 
 delete_bucket_contents() {
