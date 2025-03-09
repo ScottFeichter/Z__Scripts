@@ -206,27 +206,27 @@ echo "LIST SUBJECT TO CHANGE - CHECK PROD ENV FOR MOST CURRENT"
 
 echo ""
 echo "npm init -y"          >> $ARG-backend-requirements.txt
-echo "" 					>> $ARG-backend-requirements.txt
+echo "" 					          >> $ARG-backend-requirements.txt
 echo "# npm install for:" 	>> $ARG-backend-requirements.txt
-echo cookie-parser 			>> $ARG-backend-requirements.txt;
-echo cors 				    >> $ARG-backend-requirements.txt;
-echo csurf 					>> $ARG-backend-requirements.txt;
-echo dotenv 				>> $ARG-backend-requirements.txt;
-echo express 				>> $ARG-backend-requirements.txt;
-echo express-async-errors 	>> $ARG-backend-requirements.txt;
-echo helmet 				>> $ARG-backend-requirements.txt;
-echo jsonwebtoken 			>> $ARG-backend-requirements.txt;
-echo morgan 				>> $ARG-backend-requirements.txt;
-echo per-env 				>> $ARG-backend-requirements.txt;
-echo sequelize@6 			>> $ARG-backend-requirements.txt;
-echo sequelize-cli@6 		>> $ARG-backend-requirements.txt;
-echo pg						>> $ARG-backend-requirements.txt;
-echo "" 					>> $ARG-backend-requirements.txt;
+echo cookie-parser 			    >> $ARG-backend-requirements.txt
+echo cors 				          >> $ARG-backend-requirements.txt
+echo csurf 					        >> $ARG-backend-requirements.txt
+echo dotenv 				        >> $ARG-backend-requirements.txt
+echo express 				        >> $ARG-backend-requirements.txt
+echo express-async-errors 	>> $ARG-backend-requirements.txt
+echo helmet 				        >> $ARG-backend-requirements.txt
+echo jsonwebtoken 			    >> $ARG-backend-requirements.txt
+echo morgan 				        >> $ARG-backend-requirements.txt
+echo per-env 				        >> $ARG-backend-requirements.txt
+echo sequelize@6 			      >> $ARG-backend-requirements.txt
+echo sequelize-cli@6 		    >> $ARG-backend-requirements.txt
+echo pg						          >> $ARG-backend-requirements.txt
+echo "" 					          >> $ARG-backend-requirements.txt
 
-echo "#npm install -D for:" >> $ARG-backend-requirements.txt;
-echo sqlite3 				>> $ARG-backend-requirements.txt;
-echo dotenv-cli				>> $ARG-backend-requirements.txt;
-echo nodemon				>> $ARG-backend-requirements.txt;
+echo "#npm install -D for:" >> $ARG-backend-requirements.txt
+echo sqlite3 				        >> $ARG-backend-requirements.txt
+echo dotenv-cli				      >> $ARG-backend-requirements.txt
+echo nodemon				        >> $ARG-backend-requirements.txt
 wait;
 
 
@@ -1441,6 +1441,10 @@ echo ""
     #! Note: This gets the token used by gh cli ie gho_xxxxxxx
     TOKEN=$(gh auth token)
 
+    # can use this with ghp however ghp cannot be created in cli
+    # perhaps it could be in environment variable
+    # aws amplify create-app --name <app_name --repository https://<repo>.git --access-token <my access token>
+
 
 
     # Print results
@@ -1454,12 +1458,12 @@ echo ""
     echo " "
 
 
-echo ""
-echo "✅ RESULT: Gh checks complete! "
-echo ""
-read -p "⏸️  PAUSE: Press Enter to continue... "
-echo ""
-echo "-------------------------------------------------------------------"
+    echo ""
+    echo "✅ RESULT: Gh checks complete! "
+    echo ""
+    read -p "⏸️  PAUSE: Press Enter to continue... "
+    echo ""
+    echo "-------------------------------------------------------------------"
 
 
 ######################################################################################################
@@ -2458,7 +2462,7 @@ export const setupMiddleware = () => {
 
 
   SERVER.use(cors({
-    origin: ['http://localhost:5500', 'http://127.0.0.1:5500', 'file://', 'http://localhost:3000'],
+    origin: ['http://localhost:5555', 'http://127.0.0.1:5555', 'file://', 'http://localhost:3000'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'XSRF-Token'],
     credentials: true
@@ -3120,34 +3124,33 @@ git push
 echo ""
 echo "✅ RESULT: Add, commit, push finsished! "
 echo ""
-read -p "⏸️  PAUSE: Press Enter to finish backend 🏁 and run the server..."
+read -p "⏸️  PAUSE: Press Enter to finish backend 🏁 and create AWS services..."
 echo ""
 echo "-------------------------------------------------------------------"
 
 
 ###################################################################################################
-# Launch the server
-echo ""
-echo "🛠  ACTION: Launching the server... 🚀  "
-echo ""
-
-
-# Run the server
-npm run dev
-
-###################################################################################################
-###################################################################################################
-
-
-
+echo " "
+echo "📣 UPDATE: Backend complete! 🙌  "
+echo "-------------------------------------------------------------------"
 #########################################################################################################################
 #########################################################################################################################
 # AWS: CREATING SERVICES AND CI/CD
 #########################################################################################################################
 #########################################################################################################################
-echo "CREATING AWS SERVICES AND CI/CD..."
 echo " "
+echo "📣 UPDATE: CREATING AWS SERVICES AND CI/CD..."
+echo " "
+echo "-------------------------------------------------------------------"
 
+
+
+
+###################################################################################################
+# Create VPC on AWS...
+echo ""
+echo "🛠  ACTION: Create VPC on AWS...  "
+echo ""
 
 
 # Here's a script that creates a VPC and attaches an Internet Gateway to it. The script includes error checking and outputs the created resource IDs
@@ -3265,6 +3268,24 @@ fi
 echo "VPC Setup Complete!"
 echo "VPC ID: $VPC_ID"
 echo "Internet Gateway ID: $IGW_ID"
+
+
+
+echo ""
+echo "✅ RESULT: VPC finsished! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue..."
+echo ""
+echo "-------------------------------------------------------------------"
+
+
+
+
+###################################################################################################
+# Create Subnets for VPC on AWS...
+echo ""
+echo "🛠  ACTION: Subnets for VPC on AWS...  "
+echo ""
 
 
 ########################################################################################################################################################
@@ -3577,8 +3598,22 @@ echo "Public Security Group (EC2): $PUBLIC_SG_ID"
 echo "Private Security Group (RDS): $PRIVATE_SG_ID"
 
 
+echo ""
+echo "✅ RESULT: Subnets finished! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue..."
+echo ""
+echo "-------------------------------------------------------------------"
+
+
+
 #######################################################################################
-# EC2:
+# Create EC2 on AWS...
+echo ""
+echo "🛠  ACTION: EC2 on AWS...  "
+echo ""
+
+
 
 
 # Disable AWS CLI pager to prevent requiring 'q' to continue
@@ -3740,6 +3775,23 @@ echo "                                             "
 echo "To connect to your instance:"
 echo "ssh -i ${KEY_PAIR_NAME}.pem ec2-user@${PUBLIC_IP}"
 
+
+
+
+echo ""
+echo "✅ RESULT: EC2 finished! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue..."
+echo ""
+echo "-------------------------------------------------------------------"
+
+
+#######################################################################################
+# Create EBS on AWS...
+echo ""
+echo "🛠  ACTION: EBS on AWS...  "
+echo ""
+
 # This script creates an EBS volume and attaches it to an existing EC2 instance
 
 #######################################################################################
@@ -3843,7 +3895,12 @@ echo "Device Name: $DEVICE_NAME"
 
 
 
-
+echo ""
+echo "✅ RESULT: EBS finished! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue..."
+echo ""
+echo "-------------------------------------------------------------------"
 
 
 
@@ -3852,7 +3909,12 @@ echo "Device Name: $DEVICE_NAME"
 
 
 #######################################################################################
-# RDS
+# Create RDS on AWS...
+echo ""
+echo "🛠  ACTION: RDS on AWS...  "
+echo ""
+
+
 
 # Disable AWS CLI pager
 export AWS_PAGER=""
@@ -3972,12 +4034,35 @@ echo "To connect, you'll need to be in the VPC (e.g., through a bastion host or 
 
 
 
+echo ""
+echo "✅ RESULT: RDS finished! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue..."
+echo ""
+echo "-------------------------------------------------------------------"
 
+
+###################################################################################################
+echo " "
+echo "📣 UPDATE: AWS services created! 🙌  "
+echo "-------------------------------------------------------------------"
 #########################################################################################################################
 #########################################################################################################################
 # AWS: LOGING IN TO EC2, MOUNTING EBS, INSTALLING NVM AND NODE.JS
 #########################################################################################################################
 #########################################################################################################################
+echo " "
+echo "📣 UPDATE: Logging in to EC2, mounting EBS, installing NVM and NODE.JS..."
+echo " "
+echo "-------------------------------------------------------------------"
+
+
+#######################################################################################
+# Log in to EC2...
+echo ""
+echo "🛠  ACTION: Logging in to EC2...  "
+echo ""
+
 
 #######################################################################################
 # Exit on any error
@@ -4119,14 +4204,43 @@ echo "Script completed. SSH session terminated."
 
 
 
+echo ""
+echo "✅ RESULT: EC2 connected to EBS and installed NODE.JS! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue..."
+echo ""
+echo "-------------------------------------------------------------------"
+
+
 
 
 
 ########################################################################################################################################################
 echo " "
-echo "YOU HAVE FINISHED THE ENTIRE SETUP SCRIPT!!!!!!!!!!!!!!!!!!!!"
+echo "📣 UPDATE: YOU HAVE FINISHED THE ENTIRE SETUP SCRIPT!!!!!!!!!!!!!!!!!!!!"
 echo " "
 echo "Next steps: Set up CI/CD:"
 echo "Use AWS GitHub Actions, AWS CodeDeploy, or AWS CodePipeline to connect your EC2/EBS to GitHub repo"
 echo " "
-echo "Goodbye!"
+echo "-------------------------------------------------------------------"
+
+
+
+
+###################################################################################################
+# Prompt to launch the server
+echo ""
+read -p "Do you want to launch the development server? (y/n): " user_input
+
+# Check the user's response
+if [[ "$user_input" =~ ^[Yy]$ ]]; then
+  echo ""
+  echo "🛠  ACTION: Launching the server... 🚀  "
+  echo ""
+
+  # Run the server
+  npm run dev
+else
+  echo "👋 GOODBYE: Program finished!"
+  exit 0
+fi
