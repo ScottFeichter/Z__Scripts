@@ -896,8 +896,19 @@ frontend:
     preBuild:
       commands:
         - npm ci
-        # Uncomment the following line if you need to handle environment variables
-        - if [ -n "$API_URL" ]; then echo "REACT_APP_API_URL=$API_URL" >> .env; fi
+        # Branch-specific environment variables
+        - |
+          if [ "${AWS_BRANCH}" = "Production" ]; then
+            echo "REACT_APP_STAGE=production" >> .env
+            echo "REACT_APP_API_URL=$PROD_API_URL" >> .env
+          elif [ "${AWS_BRANCH}" = "Staging" ]; then
+            echo "REACT_APP_STAGE=staging" >> .env
+            echo "REACT_APP_API_URL=$STAGING_API_URL" >> .env
+          else
+            echo "REACT_APP_STAGE=development" >> .env
+            echo "REACT_APP_API_URL=$DEV_API_URL" >> .env
+          fi
+
     build:
       commands:
         - npm run build
@@ -1624,19 +1635,37 @@ else
 fi
 
 
-# Create branch configurations for all three environments
-for BRANCH in "main" "Production" "Staging" "Development"
+# Set up the Production branch as the main production branch
+aws amplify create-branch \
+    --app-id "$APP_ID" \
+    --branch-name "Production" \
+    --enable-auto-build \
+    --framework "React" \
+    --stage "PRODUCTION"
+
+# Update branch to be production branch
+aws amplify update-branch \
+    --app-id "$APP_ID" \
+    --branch-name "Production" \
+    --enable-auto-build \
+    --enable-pull-request-preview \
+    --enable-performance-mode
+
+# Set Production as the default branch (this will be your production environment)
+aws amplify update-app \
+    --app-id "$APP_ID" \
+    --platform "WEB" \
+    --default-domain \
+    --production-branch "Production"
+
+# Optional: Set up other branches
+for BRANCH in "main" "Staging" "Development"
 do
     aws amplify create-branch \
         --app-id "$APP_ID" \
         --branch-name "$BRANCH" \
-        --enable-auto-build
-
-    # Enable branch auto-build
-    aws amplify update-branch \
-        --app-id "$APP_ID" \
-        --branch-name "$BRANCH" \
-        --enable-auto-build
+        --enable-auto-build \
+        --stage "DEVELOPMENT"
 done
 
 
