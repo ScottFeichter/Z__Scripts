@@ -16,7 +16,7 @@ echo ""
 echo "-------------------------------------------------------------------"
 ###################################################################################################
 
-
+#region REPO_NAME
 #########################################################################################################################
 #########################################################################################################################
 # REPO_NAME: CREATE REPO NAME FOR ADMIEND, FRONTEND, BACKEND WITH DATE AND VERSION
@@ -113,8 +113,8 @@ echo "-------------------------------------------------------------------"
 
 ###################################################################################################
 
-
-
+#endregion
+#region ADMIEND
 #########################################################################################################################
 #########################################################################################################################
 # ADMIEND: CREATE ADMIEND REPO LOCAL AND REMOTE WITH STARTER FILES AND DIRECTORIES AND PUSH
@@ -249,7 +249,7 @@ echo ""
 
 # Initialize configuration object as a JSON file
 init_config_logging() {
-    CONFIG_FILE="amiend_config.json"
+    CONFIG_FILE="admiend_config.json"
     echo "{}" > "$CONFIG_FILE"
 }
 
@@ -370,16 +370,6 @@ echo ""
 echo "-------------------------------------------------------------------"
 
 
-
-
-
-
-
-
-
-
-
-
 ###################################################################################################
 # Create README
 echo ""
@@ -434,7 +424,8 @@ echo "-------------------------------------------------------------------"
 
 ######################################################################################################
 
-
+#endregion
+#region ADMIEND S3
 #########################################################################################################################
 #########################################################################################################################
 # ADMIEND: CREATE AND CONNECT S3 BUCKET TO ADMIEND
@@ -803,7 +794,8 @@ echo "-------------------------------------------------------------------"
 
 
 
-
+#endregion
+#region ADMIEND GIT HOOK
 #########################################################################################################################
 #########################################################################################################################
 # ADMIEND: CREATE GIT HOOK TO SEND TO S3 ON PUSH
@@ -932,6 +924,8 @@ echo ""
 echo "-------------------------------------------------------------------"
 echo "📣 UPDATE: Admiend setup complete! 🏆 "
 echo "-------------------------------------------------------------------"
+#endregion
+#region FRONTEND
 #########################################################################################################################
 #########################################################################################################################
 # FRONTEND: CREATES REACT FRONTEND THEN CREATES GIT LOCAL AND REMOTE AND PUSHES
@@ -1665,6 +1659,8 @@ echo ""
 echo "-------------------------------------------------------------------"
 echo "📣 UPDATE: Frontend setup complete! 🏆 "
 echo "-------------------------------------------------------------------"
+#endregion
+#region FRONTEND AMPLIFY
 #########################################################################################################################
 #########################################################################################################################
 # FRONTEND: CREATE AND CONNECT AMPLIFY APP TO FRONTEND REPO
@@ -1896,9 +1892,11 @@ echo " "
 echo "-------------------------------------------------------------------"
 echo "📣 UPDATE: Frontend complete! 🙌  "
 echo "-------------------------------------------------------------------"
+#endregion
+#region BACKEND
 #########################################################################################################################
 #########################################################################################################################
-# BACKEND: CREATES NODE BACKENDEND THEN CREATES GIT LOCAL AND REMOTE AND PUSHES
+# BACKEND: CREATES NODE BACKEND THEN CREATES GIT LOCAL AND REMOTE AND PUSHES
 #########################################################################################################################
 #########################################################################################################################
 echo " "
@@ -3431,6 +3429,8 @@ echo " "
 echo "-------------------------------------------------------------------"
 echo "📣 UPDATE: Backend complete! 🙌  "
 echo "-------------------------------------------------------------------"
+#endregion
+#region AWS Create
 #########################################################################################################################
 #########################################################################################################################
 # AWS: CREATING SERVICES AND CI/CD
@@ -4346,7 +4346,7 @@ echo ""
 
 
 # Log repository names
-update_config "AMIEND_REPO_NAME" "$ADMIEND_REPO_NAME"
+update_config "ADMIEND_REPO_NAME" "$ADMIEND_REPO_NAME"
 update_config "FRONTEND_REPO_NAME" "$FRONTEND_REPO_NAME"
 update_config "BACKEND_REPO_NAME" "$BACKEND_REPO_NAME"
 update_config "CREATE_DATE" "$CREATE_DATE"
@@ -4393,17 +4393,17 @@ update_service_config "postgres" "db_host" "$PG_DB_HOST"
 update_service_config "postgres" "test_db_name" "$PG_DB_NAME_TEST"
 
 
-# At the end of your script, you might want to copy this file to your amiend repo
-copy_config_to_amiend() {
-    if [ -d "$AMIEND_REPO_NAME" ]; then
-        cp "$CONFIG_FILE" "$AMIEND_REPO_NAME/aws_infrastructure_config.json"
-        cd "$AMIEND_REPO_NAME"
+# At the end of your script, you might want to copy this file to your admiend repo
+copy_config_to_admiend() {
+    if [ -d "$ADMIEND_REPO_NAME" ]; then
+        cp "$CONFIG_FILE" "$ADMIEND_REPO_NAME/aws_infrastructure_config.json"
+        cd "$ADMIEND_REPO_NAME"
         git add aws_infrastructure_config.json
         git commit -m "Update AWS infrastructure configuration"
         git push
         cd ..
     else
-        echo "Error: AMIEND repository directory not found"
+        echo "Error: ADMIEND repository directory not found"
     fi
 }
 
@@ -4424,6 +4424,8 @@ echo ""
 echo "-------------------------------------------------------------------"
 echo "📣 UPDATE: AWS services created! 🙌  "
 echo "-------------------------------------------------------------------"
+#endregion
+#region AWS Configuring
 #########################################################################################################################
 #########################################################################################################################
 # AWS: LOGING IN TO EC2, MOUNTING EBS, INSTALLING NVM AND NODE.JS
@@ -4655,6 +4657,7 @@ echo "-------------------------------------------------------------------"
 
 
 
+#endregion
 
 ###################################################################################################
 # Prompt to launch the server
