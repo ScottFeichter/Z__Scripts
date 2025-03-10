@@ -240,6 +240,68 @@ echo "-------------------------------------------------------------------"
 
 
 ###################################################################################################
+# Creating a logging function and initialize the config object...
+echo ""
+echo "🛠  ACTION: Creating a logging function and initialize the config object... "
+echo ""
+
+
+
+# Initialize configuration object as a JSON file
+init_config_logging() {
+    CONFIG_FILE="amiend_config.json"
+    echo "{}" > "$CONFIG_FILE"
+}
+
+# Function to add or update configuration
+update_config() {
+    local key=$1
+    local value=$2
+    local temp_file="temp_config.json"
+
+    # Escape special characters in the value
+    value=$(echo "$value" | sed 's/"/\\"/g')
+
+    # Read existing config and update/add new key-value pair
+    jq --arg k "$key" --arg v "$value" '. + {($k): $v}' "$CONFIG_FILE" > "$temp_file"
+    mv "$temp_file" "$CONFIG_FILE"
+}
+
+# Function to add nested configuration (for AWS services)
+update_service_config() {
+    local service=$1
+    local key=$2
+    local value=$3
+    local temp_file="temp_config.json"
+
+    # Escape special characters in the value
+    value=$(echo "$value" | sed 's/"/\\"/g')
+
+    # Create or update service configuration
+    jq --arg s "$service" --arg k "$key" --arg v "$value" \
+    'if has($s) then .[$s] += {($k): $v} else . += {($s): {($k): $v}} end' \
+    "$CONFIG_FILE" > "$temp_file"
+    mv "$temp_file" "$CONFIG_FILE"
+}
+
+# Initialize logging
+init_config_logging
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###################################################################################################
 # Create README
 echo ""
 echo "🛠  ACTION: Creating README.md... "
@@ -4193,6 +4255,89 @@ echo ""
 read -p "⏸️  PAUSE: Press Enter to continue..."
 echo ""
 echo "-------------------------------------------------------------------"
+
+
+
+#######################################################################################
+# Log AWS infrastctucture...
+echo ""
+echo "🛠  ACTION: Logging AWS infrastructure and project information...  "
+echo ""
+
+
+
+# Log repository names
+update_config "AMIEND_REPO_NAME" "$ADMIEND_REPO_NAME"
+update_config "FRONTEND_REPO_NAME" "$FRONTEND_REPO_NAME"
+update_config "BACKEND_REPO_NAME" "$BACKEND_REPO_NAME"
+update_config "CREATE_DATE" "$CREATE_DATE"
+update_config "REPO_VERSION" "$REPO_VERSION"
+
+# Log AWS Amplify information
+update_service_config "amplify" "app_id" "$APP_ID"
+update_service_config "amplify" "app_url" "https://${APP_ID}.amplifyapp.com"
+
+# Log S3 information
+update_service_config "s3" "bucket_name" "$BUCKET_NAME"
+update_service_config "s3" "region" "$AWS_REGION"
+
+# Log EC2 information
+update_service_config "ec2" "instance_id" "$EC2_INSTANCE_ID"
+update_service_config "ec2" "public_ip" "$EC2_PUBLIC_IP"
+update_service_config "ec2" "private_ip" "$EC2_PRIVATE_IP"
+
+# Log EBS information
+update_service_config "ebs" "volume_id" "$EBS_VOLUME_ID"
+update_service_config "ebs" "volume_size" "$VOLUME_SIZE"
+update_service_config "ebs" "volume_type" "$VOLUME_TYPE"
+update_service_config "ebs" "device_name" "$DEVICE_NAME"
+update_service_config "ebs" "iops" "$IOPS"
+update_service_config "ebs" "throughput" "$THROUGHPUT"
+update_service_config "ebs" "availability_zone" "$AVAILABILITY_ZONE"
+update_service_config "ebs" "attached_instance" "$EC2_INSTANCE_ID"
+
+# Log VPC information
+update_service_config "vpc" "vpc_id" "$VPC_ID"
+update_service_config "vpc" "subnet_ids" "$SUBNET_IDS"
+update_service_config "vpc" "security_group_id" "$SECURITY_GROUP_ID"
+
+# Log RDS information
+update_service_config "rds" "endpoint" "$RDS_ENDPOINT"
+update_service_config "rds" "database_name" "$DB_NAME"
+update_service_config "rds" "port" "$DB_PORT"
+
+# Log PostgreSQL database information
+update_service_config "postgres" "db_name" "$PG_DB_NAME"
+update_service_config "postgres" "db_user" "$PG_DB_USER"
+update_service_config "postgres" "db_port" "$PG_DB_PORT"
+update_service_config "postgres" "db_host" "$PG_DB_HOST"
+update_service_config "postgres" "test_db_name" "$PG_DB_NAME_TEST"
+
+
+# At the end of your script, you might want to copy this file to your amiend repo
+copy_config_to_amiend() {
+    if [ -d "$AMIEND_REPO_NAME" ]; then
+        cp "$CONFIG_FILE" "$AMIEND_REPO_NAME/aws_infrastructure_config.json"
+        cd "$AMIEND_REPO_NAME"
+        git add aws_infrastructure_config.json
+        git commit -m "Update AWS infrastructure configuration"
+        git push
+        cd ..
+    else
+        echo "Error: AMIEND repository directory not found"
+    fi
+}
+
+
+
+echo ""
+echo "✅ RESULT: RDS finished! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue..."
+echo ""
+echo "-------------------------------------------------------------------"
+
+
 
 
 ###################################################################################################
