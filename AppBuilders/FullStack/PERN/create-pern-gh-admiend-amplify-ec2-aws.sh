@@ -869,6 +869,117 @@ echo "-------------------------------------------------------------------"
 
 
 ######################################################################################################
+# Create amplify.yml
+echo ""
+echo "🛠  ACTION: Creating amplify.yml for AWS Amplify... "
+echo ""
+
+
+# Define the output file
+AWS_AMPLIFY_YML="${FRONTEND_REPO_NAME}-amplify.yml"
+
+# Check if file already exists
+if [ -f "$AWS_AMPLIFY_YML" ]; then
+    read -p "amplify.yml already exists. Do you want to overwrite it? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Operation cancelled"
+        exit 1
+    fi
+fi
+
+# Create the amplify.yml file with proper configuration
+cat > "$AWS_AMPLIFY_YML" << 'EOL'
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+        # Uncomment the following line if you need to handle environment variables
+        - if [ -n "$API_URL" ]; then echo "REACT_APP_API_URL=$API_URL" >> .env; fi
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: build
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .npm/**/*
+  customHeaders:
+    - pattern: '**/*'
+      headers:
+        - key: 'Strict-Transport-Security'
+          value: 'max-age=31536000; includeSubDomains'
+        - key: 'X-Frame-Options'
+          value: 'SAMEORIGIN'
+        - key: 'X-XSS-Protection'
+          value: '1; mode=block'
+        - key: 'X-Content-Type-Options'
+          value: 'nosniff'
+        - key: 'Content-Security-Policy'
+          value: "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;"
+  customRules:
+    - source: '</^[^.]+$|\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|woff2|ttf|map|json)$)([^.]+$)/>'
+      target: '/index.html'
+      status: '200'
+EOL
+
+# Make the file readable
+chmod 644 "$AWS_AMPLIFY_YML"
+
+# Verify the file was created
+if [ -f "$AWS_AMPLIFY_YML" ]; then
+    echo "Successfully created amplify.yml"
+    echo "Configuration includes:"
+    echo "- Clean npm install"
+    echo "- Production build"
+    echo "- Asset deployment configuration"
+    echo "- Cache optimization"
+    echo "- Security headers"
+else
+    echo "Failed to create amplify.yml"
+    exit 1
+fi
+
+# Optional: Display the contents of the file
+echo -e "\nHere's your new amplify.yml configuration:"
+echo "----------------------------------------"
+cat "$AWS_AMPLIFY_YML"
+echo "----------------------------------------"
+
+# Provide some next steps
+echo -e "\nNext steps:"
+echo "1. Review the configuration in amplify.yml"
+echo "2. Adjust the security headers as needed for your application"
+echo "3. Uncomment and configure any environment variables if needed"
+echo "4. Commit the file to your repository"
+
+
+echo ""
+echo "✅ RESULT: Amplify yml successfully created as $AWS_AMPLIFY_YML! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue... "
+echo ""
+echo "-------------------------------------------------------------------"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+######################################################################################################
 # Intall dependencies
 echo ""
 echo "🛠  ACTION: Installing dependencies..."
@@ -1513,14 +1624,23 @@ else
 fi
 
 
-# Create main branch
-echo "Creating branch..."
-aws amplify create-branch \
-    --app-id "${APP_ID}" \
-    --branch-name "main"
+# Create branch configurations for all three environments
+for BRANCH in "main" "Production" "Staging" "Development"
+do
+    aws amplify create-branch \
+        --app-id "$APP_ID" \
+        --branch-name "$BRANCH" \
+        --enable-auto-build
 
-echo "You need to adjust via the AWS Amplify Console for this app to use gh app instead of oauth..."
-echo "After this adjustment is made you then need to run the deploy as it will have been paused..."
+    # Enable branch auto-build
+    aws amplify update-branch \
+        --app-id "$APP_ID" \
+        --branch-name "$BRANCH" \
+        --enable-auto-build
+done
+
+
+
 
 #! I will suppress the waiting for amplify deploy
 # BEGINING OF WAITING FOR APP TO COMPLETE
