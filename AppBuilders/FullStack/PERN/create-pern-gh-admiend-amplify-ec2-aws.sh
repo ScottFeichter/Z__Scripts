@@ -119,9 +119,43 @@ echo "-------------------------------------------------------------------"
 ###################################################################################################
 echo ""
 echo "🛠  ACTION: Creating app project directory... "
+echo ""
 
 
-APP_PROJECT_DIR_NAME="${APP_NAME_ARG}-${CREATE_DATE}-${REPO_VERSION}"
+
+APP_PROJECT_DIR_BASE_NAME="${APP_NAME_ARG}-${CREATE_DATE}"
+project_highest_version=$REPO_VERSION  # Ensure this is initialized
+
+check_project_version() {
+    # Check local directories
+    local existing_project_dirs=$(find . -maxdepth 1 -type d -name "${APP_PROJECT_DIR_BASE_NAME}-*" | sed 's|./||')
+
+    # Check versions from local directories
+    if [ -n "$existing_project_dirs" ]; then
+        local project_dir_version=$(echo "$existing_project_dirs" | grep -o "${APP_PROJECT_DIR_BASE_NAME}-[0-9]*$" | grep -o '[0-9]*$' | sort -n | tail -1)
+        project_dir_version=${project_dir_version:-0}  # Default to 0 if empty
+
+        if [ "$project_dir_version" -gt "$project_highest_version" ]; then
+            project_highest_version=$project_dir_version
+        fi
+    fi
+
+    # Only increment if we found existing versions
+    if [ "$project_highest_version" -gt 0 ]; then
+        REPO_VERSION=$((project_highest_version + 1))
+        echo ""
+        echo "Incrementing version because local project exists..."
+    else
+        REPO_VERSION=1
+    fi
+}
+
+
+# Check for existing repos and update version if needed
+echo "Checking for project version..."
+check_project_version
+
+APP_PROJECT_DIR_NAME=${APP_PROJECT_DIR_BASE_NAME}-${REPO_VERSION}
 
 mkdir $APP_PROJECT_DIR_NAME
 cd $APP_PROJECT_DIR_NAME
@@ -269,8 +303,6 @@ echo "-------------------------------------------------------------------"
 # Creating a logging function and initialize the config object...
 echo ""
 echo "🛠  ACTION: Creating a logging function and initialize the config object... "
-echo ""
-
 
 
 # Initialize configuration object as a JSON file
@@ -383,13 +415,15 @@ Local Development → Testing → Git Push → AWS Production
      ↑                                        ↓
   Quick iterations                     Production Environment
      ↑                                        ↓
-  No AWS costs                          Managed Servi
+  No AWS costs                          Managed Services
+
+------------------------------------------------------------
 EOL
 
 
 
 echo ""
-echo "✅ RESULT: README.md successfully created! "
+echo "✅ RESULT: SETUP.md successfully created! "
 echo ""
 read -p "⏸️  PAUSE: Press Enter to continue... "
 echo ""
@@ -422,11 +456,7 @@ echo ""
 
 git init
 git add .
-git commit -m "initial (msg via shell)"
-
-git branch Production
-git branch Staging
-git branch Development
+git commit -m "initial \(msg via shell\)"
 
 gh repo create "$ADMIEND_REPO_NAME" --public
 
@@ -434,10 +464,6 @@ git remote add origin "https://github.com/ScottFeichter/$ADMIEND_REPO_NAME.git"
 git branch -M main
 git push -u origin main
 
-# Push other branches
-git push origin Production
-git push origin Staging
-git push origin Development
 
 echo ""
 echo "✅ RESULT: Git local w github remote initiated, staged, committed and pushed! "
@@ -1001,7 +1027,9 @@ cat > README.md << EOL
 react front end for $FRONTEND_REPO_NAME
 EOL
 git add .
-git commit -m "initial (msg via shell)"
+git commit -m "initial \(msg via shell\)"
+
+git branch -M main
 
 git branch Production
 git branch Staging
@@ -1012,13 +1040,15 @@ gh repo create "$FRONTEND_REPO_NAME" --public
 
 # Configure remote and push
 git remote add origin "https://github.com/ScottFeichter/$FRONTEND_REPO_NAME.git"
-git branch -M main
-git push -u origin main
 
-# Push other branches
-git push origin Production
-git push origin Staging
-git push origin Development
+
+# Push branches
+git push -u origin main
+git push -u origin Production
+git push -u origin Staging
+git push -u origin Development
+
+
 
 
 echo ""
@@ -1663,15 +1693,21 @@ echo ""
 echo "🛠  ACTION: Pulling, Staging, Committing, Pushing..."
 echo ""
 
+git add -A
+git commit -m "Updating and preparing to pull..."
+git push
 
-# Pull from main into Production, Development, and Testing
-branches=("Production" "Development" "Testing")
+
+# Pull from main into Production, Development, and Staging
+branches=("Production" "Development" "Staging")
 for branch in "${branches[@]}"; do
-    echo "\n🔄 Pulling latest changes from main into $branch..."
+    echo "Pulling latest changes from main into $branch..."
     git checkout $branch
     git pull origin main
     git push origin $branch
 done
+
+git checkout main
 
 git add -A
 git commit -m "Frontend Setup Complete"
@@ -2008,7 +2044,9 @@ echo ""
 git init
 touch README.md
 git add .
-git commit -m "initial (msg via shell)"
+git commit -m "initial \(msg via shell\)"
+
+git branch -M main
 
 git branch Production
 git branch Staging
@@ -2017,9 +2055,11 @@ git branch Development
 gh repo create "$BACKEND_REPO_NAME" --public
 
 git remote add origin "https://github.com/ScottFeichter/$BACKEND_REPO_NAME.git"
-git branch -M main
-git push -u origin main
 
+git push -u origin main
+git push -u origin Production
+git push -u origin Staging
+git push -u origin Development
 
 
 echo ""
@@ -3446,14 +3486,16 @@ echo "🛠  ACTION: Pulling, Staging, Committing, Pushing..."
 echo ""
 
 
-# Pull from main into Production, Development, and Testing
-branches=("Production" "Development" "Testing")
+# Pull from main into Production, Development, and Staging
+branches=("Production" "Development" "Staging")
 for branch in "${branches[@]}"; do
-    echo "\n🔄 Pulling latest changes from main into $branch..."
+    echo "Pulling latest changes from main into $branch..."
     git checkout $branch
     git pull origin main
     git push origin $branch
 done
+
+git checkout main
 
 git add -A
 git commit -m "Backend install and setup complete"
