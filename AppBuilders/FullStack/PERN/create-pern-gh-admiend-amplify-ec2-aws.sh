@@ -121,7 +121,7 @@ echo ""
 echo "🛠  ACTION: Creating app project directory... "
 
 
-APP_PROJECT_DIR_NAME="${APP_NAME}-${CREATE_DATE}-${REPO_VERSION}"
+APP_PROJECT_DIR_NAME="${APP_NAME_ARG}-${CREATE_DATE}-${REPO_VERSION}"
 
 mkdir $APP_PROJECT_DIR_NAME
 cd $APP_PROJECT_DIR_NAME
@@ -925,10 +925,11 @@ echo "-------------------------------------------------------------------"
 
 
 ######################################################################################################
-# Final git add push
+# Final git stage commit push
 echo ""
-echo "🛠  ACTION: Staging, committing, pushing..."
+echo "🛠  ACTION: Staging, Committing, Pushing..."
 echo ""
+
 
 git add -A
 git commit -m "admiend Setup Complete"
@@ -948,7 +949,7 @@ echo "-------------------------------------------------------------------"
 ######################################################################################################
 echo ""
 echo "-------------------------------------------------------------------"
-echo "📣 UPDATE: Admiend setup complete! 🏆 "
+echo "📣 UPDATE: ADMIEND SETUP COMPLETE! 🏆 "
 echo "-------------------------------------------------------------------"
 #endregion
 #region FRONTEND
@@ -1657,10 +1658,20 @@ echo "-------------------------------------------------------------------"
 
 
 ######################################################################################################
-# Final git add push
+# Final git pull stage add push
 echo ""
-echo "🛠  ACTION: Staging, committing, pushing..."
+echo "🛠  ACTION: Pulling, Staging, Committing, Pushing..."
 echo ""
+
+
+# Pull from main into Production, Development, and Testing
+branches=("Production" "Development" "Testing")
+for branch in "${branches[@]}"; do
+    echo "\n🔄 Pulling latest changes from main into $branch..."
+    git checkout $branch
+    git pull origin main
+    git push origin $branch
+done
 
 git add -A
 git commit -m "Frontend Setup Complete"
@@ -1683,7 +1694,7 @@ echo "-------------------------------------------------------------------"
 ######################################################################################################
 echo ""
 echo "-------------------------------------------------------------------"
-echo "📣 UPDATE: Frontend setup complete! 🏆 "
+echo "📣 UPDATE: FRONTEND SETUP COMPLETE! 🏆 "
 echo "-------------------------------------------------------------------"
 #endregion
 #region FRONTEND AMPLIFY
@@ -3429,11 +3440,20 @@ echo "-------------------------------------------------------------------"
 
 
 ###################################################################################################
-# Add, commit, push before server launching
+# Final git pull stage add push
 echo ""
-echo "🛠  ACTION: Adding, committing, pushing to git...  "
+echo "🛠  ACTION: Pulling, Staging, Committing, Pushing..."
 echo ""
 
+
+# Pull from main into Production, Development, and Testing
+branches=("Production" "Development" "Testing")
+for branch in "${branches[@]}"; do
+    echo "\n🔄 Pulling latest changes from main into $branch..."
+    git checkout $branch
+    git pull origin main
+    git push origin $branch
+done
 
 git add -A
 git commit -m "Backend install and setup complete"
@@ -3452,7 +3472,7 @@ echo "-------------------------------------------------------------------"
 ###################################################################################################
 echo " "
 echo "-------------------------------------------------------------------"
-echo "📣 UPDATE: Backend complete! 🙌  "
+echo "📣 UPDATE: BACKEND SETUP COMPLETE! 🙌  "
 echo "-------------------------------------------------------------------"
 #endregion
 #region AWS Create
@@ -4417,7 +4437,7 @@ update_service_config "ebs" "attached_instance" "$EC2_INSTANCE_ID"
 update_service_config "vpc" "vpc_id" "$VPC_ID"
 update_service_config "vpc" "subnet_ids" "$SUBNET_IDS"
 update_service_config "vpc" "security_group_id" "$SECURITY_GROUP_ID"
-update service_config "vpc" "subnet_group_name" "$SUBNET_GROUP_NAME"
+update_service_config "vpc" "subnet_group_name" "$SUBNET_GROUP_NAME"
 
 # Log RDS information
 update_service_config "rds" "db_identifier" "$DB_IDENTIFIER"
@@ -5806,7 +5826,10 @@ else
 fi
 EOL
 
-cd ../$BACKEND_REPO_NAME
+
+
+
+
 
 
 echo ""
@@ -5817,10 +5840,33 @@ echo ""
 echo "-------------------------------------------------------------------"
 
 
+
+######################################
+# Final git stage commit push
+echo ""
+echo "🛠  ACTION: Staging, Committing, Pushing..."
+echo ""
+
+git add -A
+git commit -m "Created and logging json and delete script"
+git push
+
+cd ../$BACKEND_REPO_NAME
+
+echo ""
+echo "✅ RESULT: Admiend up to date! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue..."
+echo ""
+echo "-------------------------------------------------------------------"
+
+
+
+
 ###################################################################################################
 echo ""
 echo "-------------------------------------------------------------------"
-echo "📣 UPDATE: Collected app information and created delete script 🙌  "
+echo "📣 UPDATE: COLLECTED APP INFO AND CREATED DELETE SCRIPT 🙌  "
 echo "-------------------------------------------------------------------"
 #endregion
 #region AWS Configuring
