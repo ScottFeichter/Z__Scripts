@@ -11,19 +11,13 @@ DATABASES=(
     # BE SURE TO REPLACE THESE WITH THE NAMES YOU WANT TO DELETE
     # ALSO BE SURE YOU HAVE AT LEAST ONE NAME IN HERE OR IT MIGHT BE DANGEROUS
     # YOU DON'T NEED THESE TO BE ENCLOSED IN QUOTES
-backend_neorgp_03_07_2025_1_db_postgres
-backend_tests_03_08_2025_1_db_postgres
-backend_tests3_03_09_2025_1_db_postgres
-backend_tests2_03_09_2025_1_db_postgres
-backend_tests4_03_09_2025_1_db_postgres
-backend_tests5_03_09_2025_1_db_postgres
-backend_test_neorgp_03_07_2025_1_db_postgres
-backend_test_tests3_03_09_2025_1_db_postgres
-backend_test_tests5_03_09_2025_1_db_postgres
-backend_test_tests_03_08_2025_1_db_postgres
-backend_test_tests4_03_09_2025_1_db_postgres
-backend_test_tests2_03_09_2025_1_db_postgres
+backend_test_03_09_2025_2_db_postgres
+backend_test_03_09_2025_3_db_postgres
+backend_test_test_03_09_2025_2_db_postgres
+backend_test_test_03_09_2025_3_db_postgres
 )
+
+
 
 # Function to delete a PostgreSQL database
 delete_database() {
