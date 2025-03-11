@@ -4557,7 +4557,6 @@ export AWS_PAGER=""
 
 
 #######################    DELETE SCRIPT CONFIRMATION   ######################
-
 echo " "
 echo "-------------------------------------------------------------------"
 echo "⚠️ ACHTUNG: THIS SCRIPT WILL DELETE THE ENTIRE APP INCLUDING AWS SERVICES, GH REPOS, AND LOCAL FILES!!!!!!! ⚠️"
@@ -4575,10 +4574,6 @@ read -p "💣 CONFIRM: Are you sure you want to proceed with app deletion? (y/n)
 
 # Check the user's response
 if [[ "$user_input" =~ ^[Yy]$ ]]; then
-
-
-
-
 
 #######################    DELETE VPC START    ###############################
 echo ""
@@ -4940,12 +4935,6 @@ read -p "⏸️  PAUSE: Press Enter to continue... "
 echo ""
 echo "-------------------------------------------------------------------"
 #######################    DELETE VPC END    ###############################
-
-
-
-
-
-
 #######################    DELETE SUBNETS START   ###############################
 echo ""
 echo "🛠  ACTION: Deleting Subnets... "
@@ -5040,13 +5029,6 @@ read -p "⏸️  PAUSE: Press Enter to continue... "
 echo ""
 echo "-------------------------------------------------------------------"
 #######################    DELETE SUBNETS END    ###############################
-
-
-
-
-
-
-
 #######################    DELETE RDS START    ###############################
 echo ""
 echo "🛠  ACTION: Deleting RDS... "
@@ -5161,16 +5143,6 @@ echo ""
 echo "-------------------------------------------------------------------"
 
 #######################    DELETE RDS END    #################################
-
-
-
-
-
-
-
-
-
-
 #######################    DELETE EC2 START    ###############################
 echo ""
 echo "🛠  ACTION: Deleting EC2... "
@@ -5282,13 +5254,7 @@ echo ""
 read -p "⏸️  PAUSE: Press Enter to continue... "
 echo ""
 echo "-------------------------------------------------------------------"
-
-
 #######################    DELETE EC2 END    #################################
-
-
-
-
 #######################    DELETE EBS START    ###############################
 echo ""
 echo "🛠  ACTION: Deleting EBS... "
@@ -5383,12 +5349,6 @@ read -p "⏸️  PAUSE: Press Enter to continue... "
 echo ""
 echo "-------------------------------------------------------------------"
 #######################    DELETE EBS END    ###############################
-
-
-
-
-
-
 #######################    DELETE S3 START    ###############################
 echo ""
 echo "🛠  ACTION: Deleting S3... "
@@ -5556,12 +5516,7 @@ read -p "⏸️  PAUSE: Press Enter to continue... "
 echo ""
 echo "-------------------------------------------------------------------"
 #######################    DELETE S3 END    ###############################
-
-
-
-
 #######################    DELETE AMPLIFY START    ###############################
-
 echo ""
 echo "🛠  ACTION: Deleting Amplify... "
 echo ""
@@ -5613,12 +5568,6 @@ read -p "⏸️  PAUSE: Press Enter to continue... "
 echo ""
 echo "-------------------------------------------------------------------"
 #######################    DELETE AMPLIFY END    ###############################
-
-
-
-
-
-
 #######################    DELETE LOCAL POSTGRES START    ####################
 echo ""
 echo "🛠  ACTION: Deleting local Postgres... "
@@ -5721,11 +5670,6 @@ read -p "⏸️  PAUSE: Press Enter to continue... "
 echo ""
 echo "-------------------------------------------------------------------"
 #######################    DELETE LOCAL POSTGRES END    ######################
-
-
-
-
-
 #######################    DELETE GITHUB REPOS START    ###############################
 echo ""
 echo "🛠  ACTION: Deleting Github repos... "
@@ -5804,14 +5748,6 @@ read -p "⏸️  PAUSE: Press Enter to continue... "
 echo ""
 echo "-------------------------------------------------------------------"
 #######################    DELETE GITHUB REPOS END    ###############################
-
-
-
-
-
-
-
-
 #######################    DELETE LOCAL FILES START    ####################
 echo ""
 echo "🛠  ACTION: Deleting local files/fodlers... "
@@ -5842,11 +5778,6 @@ echo ""
 echo "-------------------------------------------------------------------"
 
 #######################    DELETE LOCAL FILES END    ######################
-
-
-
-
-
 #############################################################################
 echo " "
 echo "-------------------------------------------------------------------"
@@ -5876,6 +5807,8 @@ EOL
 
 echo ""
 echo "✅ RESULT: App delete script successfully created! "
+echo ""
+echo "📂 LOCATION: scripts/delete-${APP_PROJECT_DIR_NAME}-script.sh"
 echo ""
 read -p "⏸️  PAUSE: Press Enter to continue..."
 echo ""
