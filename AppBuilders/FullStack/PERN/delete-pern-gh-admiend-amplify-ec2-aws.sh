@@ -1,4 +1,5 @@
 #!/bin/bash
+export AWS_PAGER=""
 #######################    NOTE ABOUT APP CLEANUP    ##########################
 
                 # WHEN YOU WANT TO DELTE AN APP'S AWS RESOURCES:
@@ -19,27 +20,44 @@
                         # 9. Certificates (ACM)
                         # 10. Amplify Applications
                         # 11. S3 Buckets
-
-need to have the create script output a text file in the admiend with information for all the services
-
-VPC - need VPC ID
-Double check RDS DB subnet group gets deleted
-EBS
-S3 Bucket for admiend
-Amplify App
-GitHub Repos
+                        # 12. Local Postrgres
+                        # 13. Github Repos
+                        # 14. Local Files
 
 
+#######################    DELETE SCRIPT CONFIRMATION   ######################
+
+echo " "
+echo "-------------------------------------------------------------------"
+echo "⚠️ ACHTUNG: THIS SCRIPT WILL DELETE THE ENTIRE APP INCLUDING AWS SERVICES, GH REPOS, AND LOCAL FILES!!!!!!! ⚠️"
+echo "-------------------------------------------------------------------"
+echo " "
+echo "🚽  LOO FLUSH: This script attempts to delete everything in sequence..."
+echo "💥  DATA LOSS: You will LOSE DATA that is associated with this app..."
+echo " "
+echo "-------------------------------------------------------------------"
+
+
+# Prompt to user to continue
+echo ""
+read -p "💣 CONFIRM: Are you sure you want to proceed with app deletion? (y/n): " user_input
+
+# Check the user's response
+if [[ "$user_input" =~ ^[Yy]$ ]]; then
 
 
 
-export AWS_PAGER=""
+
 
 #######################    DELETE VPC START    ###############################
+echo ""
+echo "🛠  ACTION: Deleting VPC... "
+echo ""
+
 
 # List of VPCs to delete
 VPC_LIST=(
-vpc-017fd5d7f74dff225
+    "$vpc_id"
 # Add more VPC IDs as needed
 )
 
@@ -381,20 +399,32 @@ done
 echo "VPC deletion process completed"
 
 
+
+
+
+echo ""
+echo "✅ RESULT: VPC delete process finished! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue... "
+echo ""
+echo "-------------------------------------------------------------------"
 #######################    DELETE VPC END    ###############################
 
 
 
 
+
+
 #######################    DELETE SUBNETS START   ###############################
+echo ""
+echo "🛠  ACTION: Deleting Subnets... "
+echo ""
+
+
 
 # Array of subnet group names - change them to suit your needs
 SUBNET_GROUPS=(
-do-reg-mi-02-20-2025-4-db-subnet-group
-neorgp-02-18-2025-2-db-subnet-group
-neorgp-02-21-2025-4-db-subnet-group
-neorgp-02-23-2025-1-db-subnet-group
-test-02-23-2025-4-db-subnet-group
+"$SUBNET_GROUP_NAME"
 )
 
 # Function to delete an RDS subnet group
@@ -471,16 +501,273 @@ else
 fi
 
 
+
+echo ""
+echo "✅ RESULT: Subnet delete process finished! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue... "
+echo ""
+echo "-------------------------------------------------------------------"
 #######################    DELETE SUBNETS END    ###############################
 
 
 
 
 
+
+
+#######################    DELETE RDS START    ###############################
+echo ""
+echo "🛠  ACTION: Deleting RDS... "
+echo ""
+
+
+
+
+# Array of RDS instance identifiers - change them to suit your needs
+RDS_INSTANCES=(
+"$DB_IDENTIFIER"
+)
+
+# Function to delete an RDS instance
+delete_rds() {
+    local db_identifier=$1
+    echo "Processing RDS instance: $db_identifier"
+
+    # Check if instance exists and get its status
+    db_status=$(aws rds describe-db-instances \
+        --db-instance-identifier "$db_identifier" \
+        --query 'DBInstances[0].DBInstanceStatus' \
+        --output text 2>/dev/null) || {
+        echo "  RDS instance does not exist: $db_identifier"
+        echo "----------------------------------------"
+        return 1
+    }
+
+    # Check if instance has deletion protection enabled
+    deletion_protection=$(aws rds describe-db-instances \
+        --db-instance-identifier "$db_identifier" \
+        --query 'DBInstances[0].DeletionProtection' \
+        --output text)
+
+    if [ "$deletion_protection" == "true" ]; then
+        echo "  Warning: Deletion protection is enabled for $db_identifier"
+        read -p "  Do you want to disable deletion protection? (y/n): " disable_protection
+        if [[ $disable_protection == [Yy]* ]]; then
+            echo "  Disabling deletion protection..."
+            aws rds modify-db-instance \
+                --db-instance-identifier "$db_identifier" \
+                --no-deletion-protection \
+                --apply-immediately
+
+            echo "  Waiting for modification to complete..."
+            aws rds wait db-instance-available --db-instance-identifier "$db_identifier"
+        else
+            echo "  Skipping instance deletion"
+            echo "----------------------------------------"
+            return 1
+        fi
+    fi
+
+    # Prompt for final snapshot
+    read -p "  Do you want to create a final snapshot? (y/n): " create_snapshot
+    if [[ $create_snapshot == [Yy]* ]]; then
+        snapshot_identifier="${db_identifier}-final-$(date +%Y%m%d-%H%M%S)"
+        echo "  Creating final snapshot: $snapshot_identifier"
+
+        aws rds delete-db-instance \
+            --db-instance-identifier "$db_identifier" \
+            --final-db-snapshot-identifier "$snapshot_identifier"
+    else
+        echo "  Proceeding without final snapshot..."
+        aws rds delete-db-instance \
+            --db-instance-identifier "$db_identifier" \
+            --skip-final-snapshot
+    fi
+
+    # Wait for deletion to complete
+    echo "  Waiting for instance deletion to complete..."
+    if aws rds wait db-instance-deleted --db-instance-identifier "$db_identifier"; then
+        echo "  Successfully deleted RDS instance: $db_identifier"
+    else
+        echo "  Failed to verify deletion of RDS instance: $db_identifier"
+    fi
+    echo "----------------------------------------"
+}
+
+# Main execution
+echo "Starting RDS instance deletion process..."
+echo "----------------------------------------"
+
+# Check if instances array is empty
+if [ ${#RDS_INSTANCES[@]} -eq 0 ]; then
+    echo "No RDS instances specified for deletion"
+    exit 1
+fi
+
+# Confirm deletion
+echo "The following RDS instances will be deleted:"
+printf '%s\n' "${RDS_INSTANCES[@]}"
+echo "WARNING: This action cannot be undone if you choose to skip final snapshots!"
+read -p "Are you sure you want to proceed? (y/n): " confirm
+
+if [[ $confirm == [Yy]* ]]; then
+    for instance in "${RDS_INSTANCES[@]}"; do
+        delete_rds "$instance"
+    done
+    echo "RDS instance deletion process complete!"
+else
+    echo "Operation cancelled"
+fi
+
+
+
+echo ""
+echo "✅ RESULT: RDS delete process finished! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue... "
+echo ""
+echo "-------------------------------------------------------------------"
+
+#######################    DELETE RDS END    #################################
+
+
+
+
+
+
+
+
+
+
+#######################    DELETE EC2 START    ###############################
+echo ""
+echo "🛠  ACTION: Deleting EC2... "
+echo ""
+
+
+
+
+# Array of EC2 instance IDs - change them to suit your needs
+INSTANCES=(
+    # !Replace with your instance IDs
+"$EC2_INSTANCE_ID"
+
+)
+
+# Function to delete an EC2 instance
+delete_instance() {
+    local instance_id=$1
+    echo "Processing EC2 instance: $instance_id"
+
+    # Check if instance exists by trying to get its details
+    if aws ec2 describe-instances --instance-ids "$instance_id" &>/dev/null; then
+        echo "  Instance exists, checking state..."
+
+        # Get instance state
+        instance_state=$(aws ec2 describe-instances \
+            --instance-ids "$instance_id" \
+            --query 'Reservations[].Instances[].State.Name' \
+            --output text)
+
+        echo "  Current instance state: $instance_state"
+
+        # If instance is running or stopped, terminate it
+        if [ "$instance_state" != "terminated" ]; then
+            echo "  Terminating instance..."
+
+            # Check if instance has termination protection
+            termination_protection=$(aws ec2 describe-instance-attribute \
+                --instance-id "$instance_id" \
+                --attribute disableApiTermination \
+                --query 'DisableApiTermination.Value' \
+                --output text)
+
+            if [ "$termination_protection" == "true" ]; then
+                echo "  Disabling termination protection..."
+                aws ec2 modify-instance-attribute \
+                    --instance-id "$instance_id" \
+                    --no-disable-api-termination
+            fi
+
+            # Terminate the instance
+            aws ec2 terminate-instances --instance-ids "$instance_id"
+
+            echo "  Waiting for instance termination..."
+            aws ec2 wait instance-terminated --instance-ids "$instance_id"
+
+            if [ $? -eq 0 ]; then
+                echo "  Successfully terminated instance: $instance_id"
+            else
+                echo "  Failed to terminate instance: $instance_id"
+            fi
+        else
+            echo "  Instance is already terminated"
+        fi
+    else
+        echo "  Instance does not exist: $instance_id"
+    fi
+    echo "----------------------------------------"
+}
+
+# Main execution
+echo "Starting EC2 instance termination process..."
+echo "----------------------------------------"
+
+# Get instance names for confirmation
+echo "The following instances will be terminated:"
+for instance in "${INSTANCES[@]}"; do
+    name=$(aws ec2 describe-tags \
+        --filters "Name=resource-id,Values=$instance" "Name=key,Values=Name" \
+        --query 'Tags[].Value' \
+        --output text)
+    echo "Instance ID: $instance (Name: ${name:-No name tag})"
+done
+
+# Ask for confirmation
+read -p "Are you sure you want to terminate these instances? (y/n): " confirm
+if [[ $confirm != [Yy]* ]]; then
+    echo "Operation cancelled"
+    exit 1
+fi
+
+# Process each instance
+for instance in "${INSTANCES[@]}"; do
+    delete_instance "$instance"
+done
+
+echo "Instance termination process complete!"
+echo "--------------------------------------"
+echo "                                         "
+echo "PLEASE DELETE ANY ASSOCIATED KEY PAIRS AND SECURITY GROUPS!!!"
+echo "                                         "
+echo "Look in AWS EC2 Console at left under Network & Security you can find them."
+echo "Also delete associated .pem files."
+
+
+echo ""
+echo "✅ RESULT: EC2 delete process finished! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue... "
+echo ""
+echo "-------------------------------------------------------------------"
+
+
+#######################    DELETE EC2 END    #################################
+
+
+
+
 #######################    DELETE EBS START    ###############################
+echo ""
+echo "🛠  ACTION: Deleting EBS... "
+echo ""
+
+
+
 # Array of volume IDs - change them to suit your needs
 VOLUMES=(
-vol-08efdb591ff2a91e3
+"$EBS_VOLUME_ID"
 )
 
 # Function to delete an EBS volume
@@ -556,6 +843,14 @@ else
     echo "Operation cancelled"
 fi
 
+
+
+echo ""
+echo "✅ RESULT: EBS delete process finished! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue... "
+echo ""
+echo "-------------------------------------------------------------------"
 #######################    DELETE EBS END    ###############################
 
 
@@ -564,11 +859,15 @@ fi
 
 
 #######################    DELETE S3 START    ###############################
+echo ""
+echo "🛠  ACTION: Deleting S3... "
+echo ""
+
 
 
 # Array of bucket names
 BUCKETS=(
-admiend-neorgp-02-23-2025-1-20250223015505-c9dcb488
+"$BUCKET_NAME"
 )
 
 delete_bucket_contents() {
@@ -716,6 +1015,15 @@ if [ $failed -gt 0 ]; then
     exit 1
 fi
 
+
+
+
+echo ""
+echo "✅ RESULT: S3 delete process finished! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue... "
+echo ""
+echo "-------------------------------------------------------------------"
 #######################    DELETE S3 END    ###############################
 
 
@@ -723,10 +1031,15 @@ fi
 
 #######################    DELETE AMPLIFY START    ###############################
 
+echo ""
+echo "🛠  ACTION: Deleting Amplify... "
+echo ""
+
+
 
 # Array of Amplify app IDs - change them to suit your needs
 APPS=(
-d3dkathqeduquo
+"$APP_ID"
 )
 
 # Function to delete an Amplify app
@@ -761,13 +1074,133 @@ done
 echo "App deletion process complete!"
 
 
+
+echo ""
+echo "✅ RESULT: Amplify delete process finished! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue... "
+echo ""
+echo "-------------------------------------------------------------------"
 #######################    DELETE AMPLIFY END    ###############################
 
 
 
 
 
+
+#######################    DELETE LOCAL POSTGRES START    ####################
+echo ""
+echo "🛠  ACTION: Deleting local Postgres... "
+echo ""
+
+
+
+# Database connection parameters - these should be set as environment variables
+DB_HOST=${PGHOST:-"localhost"}
+DB_PORT=${PGPORT:-"5432"}
+DB_USER=${PGUSER:-"postgres"}
+DB_PASSWORD=${PGPASSWORD:-""}
+
+# Array of database names to delete
+DATABASES=(
+    # BE SURE TO REPLACE THESE WITH THE NAMES YOU WANT TO DELETE
+    # ALSO BE SURE YOU HAVE AT LEAST ONE NAME IN HERE OR IT MIGHT BE DANGEROUS
+    # YOU DON'T NEED THESE TO BE ENCLOSED IN QUOTES
+"$PG_DB_NAME"
+)
+
+# Function to delete a PostgreSQL database
+delete_database() {
+    local db_name=$1
+    echo "Processing database: $db_name"
+
+    # Export password for all psql commands
+    export PGPASSWORD="$DB_PASSWORD"
+
+    # Check if database exists
+    if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -lqt | cut -d \| -f 1 | grep -qw "$db_name"; then
+        echo "  Database exists. Proceeding with deletion..."
+
+        # Check if database is being accessed
+        local connections=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -t -c \
+            "SELECT count(*) FROM pg_stat_activity WHERE datname = '$db_name';")
+
+        if [ "$connections" -gt "0" ]; then
+            echo "  Warning: Database has active connections. Forcing disconnection..."
+            # Force disconnect all users
+            psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -c \
+                "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$db_name';" &>/dev/null
+        fi
+
+        # Delete the database
+        if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -c "DROP DATABASE \"$db_name\";" &>/dev/null; then
+            echo "  Successfully deleted database: $db_name"
+        else
+            echo "  Failed to delete database: $db_name"
+        fi
+    else
+        echo "  Database does not exist: $db_name"
+    fi
+    echo "----------------------------------------"
+}
+
+
+# Main execution
+echo "Starting PostgreSQL database deletion process..."
+echo "----------------------------------------"
+
+# Verify psql is installed
+if ! command -v psql &>/dev/null; then
+    echo "Error: psql is not installed. Please install it first."
+    exit 1
+fi
+
+# Test database connection
+if ! psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -c "SELECT 1;" &>/dev/null; then
+    echo "Error: Cannot connect to PostgreSQL. Please check your credentials and connection."
+    exit 1
+fi
+
+
+# Display all databases that will be deleted
+echo "The following databases will be deleted:"
+for db in "${DATABASES[@]}"; do
+    echo "  - $db"
+done
+echo "----------------------------------------"
+
+# Single confirmation prompt
+read -p "Are you sure you want to delete these databases? (y/n): " confirm
+if [[ $confirm == [yY] ]]; then
+    # Process each database
+    for db in "${DATABASES[@]}"; do
+        delete_database "$db"
+    done
+    echo "Database deletion process complete!"
+else
+    echo "Operation cancelled. No databases were deleted."
+fi
+
+
+
+echo ""
+echo "✅ RESULT: Postgres delete process finished! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue... "
+echo ""
+echo "-------------------------------------------------------------------"
+#######################    DELETE LOCAL POSTGRES END    ######################
+
+
+
+
+
 #######################    DELETE GITHUB REPOS START    ###############################
+echo ""
+echo "🛠  ACTION: Deleting Github repos... "
+echo ""
+
+
 
 # Array of repository names - change them to suit your needs
 REPOS=(
@@ -775,9 +1208,9 @@ REPOS=(
     # BE SURE TO REPLACE THESE WITH THE NAMES YOU WANT TO DELETE
     # ALSO BE SURE YOU HAVE AT LEAST ON NAME IN HERE OR IT MIGHT DELETE EVERY REPO!!!!!!!!!!!!
     # YOU DON'T NEED THESE TO BE ENCLOSED IN QUOTES
-backend-neorgp-02-23-2025-1
-frontend-neorgp-02-23-2025-1
-admiend-neorgp-02-23-2025-1
+"$ADMIEND_REPO_NAME"
+"$FRONTEND_REPO_NAME"
+"$BACKEND_REPO_NAME"
 )
 
 # Function to delete a GitHub repository
@@ -832,4 +1265,73 @@ done
 echo "Repository deletion process complete!"
 
 
+
+echo ""
+echo "✅ RESULT: Github repo delete process finished! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue... "
+echo ""
+echo "-------------------------------------------------------------------"
 #######################    DELETE GITHUB REPOS END    ###############################
+
+
+
+
+
+
+
+
+#######################    DELETE LOCAL FILES START    ####################
+echo ""
+echo "🛠  ACTION: Deleting local files/fodlers... "
+echo ""
+
+
+# Directories to delete
+dirs=("$ADMIEND_REPO_NAME" "$FRONTEND_REPO_NAME" "$BACKEND_REPO_NAME" "$APP_PROJECT_DIR_NAME")
+
+# Iterate through each directory and delete if it exists
+for dir in "${dirs[@]}"; do
+    if [ -n "$dir" ] && [ -d "$dir" ]; then
+        echo "Deleting directory: $dir"
+        rm -rf "$dir"
+        wait # Ensure deletion is complete before proceeding
+    else
+        echo "Skipping: $dir (does not exist or is not set)"
+    fi
+done
+
+
+
+echo ""
+echo "✅ RESULT: Local files/folders delete process finished! "
+echo ""
+read -p "⏸️  PAUSE: Press Enter to continue... "
+echo ""
+echo "-------------------------------------------------------------------"
+
+#######################    DELETE LOCAL FILES END    ######################
+
+
+
+
+
+########################################################################################################################################################
+echo " "
+echo "-------------------------------------------------------------------"
+echo "📣 UPDATE: YOU HAVE FINISHED THE ENTIRE DELETE SCRIPT!!!!!!!!!!!!!!!!!!!!"
+echo "-------------------------------------------------------------------"
+echo " "
+echo "🗑️ REGRET: You may be able to recover local files in your trash bin..."
+echo "⚰️ TERMINATED: Your AWS services and Github repos are terminated!"
+echo " "
+echo "-------------------------------------------------------------------"
+echo ""
+echo "👋 GOODBYE: Program finished!"
+echo ""
+exit 0
+
+else
+  echo "👋 GOODBYE: Program finished!"
+  exit 0
+fi
