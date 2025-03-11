@@ -6,17 +6,7 @@ REPOS=(
     # BE SURE TO REPLACE THESE WITH THE NAMES YOU WANT TO DELETE
     # ALSO BE SURE YOU HAVE AT LEAST ON NAME IN HERE OR IT MIGHT DELETE EVERY REPO!!!!!!!!!!!!
     # YOU DON'T NEED THESE TO BE ENCLOSED IN QUOTES
-backend-test-03-09-2025-3
-frontend-test-03-09-2025-3
-admiend-test-03-09-2025-3
-backend-test-03-09-2025-2
-frontend-test-03-09-2025-2
-admiend-test-03-09-2025-2
-frontend-test-03-09-2025-1
-admiend-test-03-09-2025-1
-frontend-neorgp-03-09-2025-1
-admiend-neorgp-03-09-2025-1
-admiend-neorgp-03-07-2025-1
+node_ts-03-10-2025-2 
 )
 
 # Function to delete a GitHub repository
