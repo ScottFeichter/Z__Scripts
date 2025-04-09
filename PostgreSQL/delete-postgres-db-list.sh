@@ -11,10 +11,14 @@ DATABASES=(
     # BE SURE TO REPLACE THESE WITH THE NAMES YOU WANT TO DELETE
     # ALSO BE SURE YOU HAVE AT LEAST ONE NAME IN HERE OR IT MIGHT BE DANGEROUS
     # YOU DON'T NEED THESE TO BE ENCLOSED IN QUOTES
-backend_test_03_09_2025_2_db_postgres
-backend_test_03_09_2025_3_db_postgres
-backend_test_test_03_09_2025_2_db_postgres
-backend_test_test_03_09_2025_3_db_postgres
+backend_test_03_10_2025_1_db_postgres
+backend_test_03_10_2025_4_db_postgres
+backend_test_03_10_2025_5_db_postgres
+backend_test_test_03_10_2025_4_db_postgres
+backend_test_fullpern_03_12_2025_2_db_postgres
+backend_test_test_03_10_2025_5_db_postgres
+backend_test_test_03_10_2025_1_db_postgres
+backend_fullpern_03_12_2025_2_db_postgres
 )
 
 

@@ -1,8 +1,8 @@
 # Phase 0: Backend Set Up
 
 First, you need to setup the backend of your application. This includes
-installing dependencies, setting up Sequelize, initializing your Express
-application, connecting Express security middlewares, and testing your server
+installing dependencies, setting up Diesel, initializing your Axum
+application, connecting Axum security middlewares, and testing your server
 setup.
 
 ## Create a project folder and a README for your project
@@ -128,7 +128,7 @@ repository's main page.
 
 ## Backend and Frontend Separation
 
-In this project, you will separate the backend Express code from the frontend
+In this project, you will separate the backend Axum code from the frontend
 React code.
 
 Inside of the root directory of your project folder, create two folders called
@@ -156,14 +156,14 @@ running `npm init -y`.
 - `cors` - CORS
 - `csurf` - CSRF protection
 - `dotenv` - load environment variables into Node.js from a `.env` file
-- `express` - Express 
-- `express-async-errors` - handling `async` route handlers
+- `Axum` - Axum
+- `Axum-async-errors` - handling `async` route handlers
 - `helmet` - security middleware
 - `jsonwebtoken` - JWT
 - `morgan` - logging information about server requests/responses
 - `per-env` - use environment variables for starting app differently
-- `sequelize@6` - Sequelize
-- `sequelize-cli@6` - use `sequelize` in the command line
+- `Diesel@6` - Diesel
+- `Diesel-cli@6` - use `Diesel` in the command line
 - `pg` - use Postgres as the production environment database
 
 `npm install -D` the following packages as dev-dependencies:
@@ -214,17 +214,17 @@ module.exports = {
 
 Each environment variable will be read and exported as a key from this file.
 
-## Sequelize Setup
+## Diesel Setup
 
-You will set up Sequelize to look in the `backend/config/database.js` file for
+You will set up Diesel to look in the `backend/config/database.js` file for
 its database configurations. You will also set up the `backend/db` folder to
 contain all the files for models, seeders, and migrations.
 
-To do this, create a `.sequelizerc` file in the `backend` folder with the
+To do this, create a `.Dieselrc` file in the `backend` folder with the
 following contents:
 
 ```js
-// backend/.sequelizerc
+// backend/.Dieselrc
 const path = require('path');
 
 module.exports = {
@@ -235,10 +235,10 @@ module.exports = {
 };
 ```
 
-Initialize Sequelize to the `db` folder by running the following command in your `backend` directory:
+Initialize Diesel to the `db` folder by running the following command in your `backend` directory:
 
 ```bash
-npx sequelize init
+npx Diesel init
 ```
 
 Replace the contents of the newly created `backend/config/database.js` file with
@@ -252,14 +252,14 @@ module.exports = {
   development: {
     storage: config.dbFile,
     dialect: "sqlite",
-    seederStorage: "sequelize",
+    seederStorage: "Diesel",
     logQueryParameters: true,
     typeValidation: true
   },
   production: {
     use_env_variable: 'DATABASE_URL',
     dialect: 'postgres',
-    seederStorage: 'sequelize',
+    seederStorage: 'Diesel',
     dialectOptions: {
       ssl: {
         require: true,
@@ -287,40 +287,40 @@ system.
 Create a new file at the root of the __backend__ directory called __psql-setup-script.js__, and add the following contents.
 
 ```js
-const { sequelize } = require('./db/models');
+const { Diesel } = require('./db/models');
 
-sequelize.showAllSchemas({ logging: false }).then(async (data) => {
+Diesel.showAllSchemas({ logging: false }).then(async (data) => {
   if (!data.includes(process.env.SCHEMA)) {
-    await sequelize.createSchema(process.env.SCHEMA);
+    await Diesel.createSchema(process.env.SCHEMA);
   }
 });
 ```
 
-Finally, migrate the database using `sequelize-cli` to make sure you set
+Finally, migrate the database using `Diesel-cli` to make sure you set
 everything up correctly.
 
 ```bash
-npx dotenv sequelize db:migrate
+npx dotenv Diesel db:migrate
 ```
 
-Remember, any `sequelize db:` commands need to be prefixed with `dotenv` to load
+Remember, any `Diesel db:` commands need to be prefixed with `dotenv` to load
 the database configuration environment variables from the `.env` file.
 
-## Express Setup
+## Axum Setup
 
-After you setup Sequelize, it's time to start working on getting your Express
+After you setup Diesel, it's time to start working on getting your Axum
 application set up.
 
 ### `app.js`
 
 Create a file called `app.js` in the `backend` folder. Here you will initialize
-your Express application.
+your Axum application.
 
 At the top of the file, import the following packages:
 
 ```js
-const express = require('express');
-require('express-async-errors');
+const Axum = require('Axum');
+require('Axum-async-errors');
 const morgan = require('morgan');
 const cors = require('cors');
 const csurf = require('csurf');
@@ -337,10 +337,10 @@ const { environment } = require('./config');
 const isProduction = environment === 'production';
 ```
 
-Initialize the Express application:
+Initialize the Axum application:
 
 ```js
-const app = express();
+const app = Axum();
 ```
 
 Connect the `morgan` middleware for logging information about requests and
@@ -350,21 +350,21 @@ responses:
 app.use(morgan('dev'));
 ```
 
-Add the `cookie-parser` middleware for parsing cookies and the `express.json`
+Add the `cookie-parser` middleware for parsing cookies and the `Axum.json`
 middleware for parsing JSON bodies of requests with `Content-Type` of
 `"application/json"`.
 
 ```js
 app.use(cookieParser());
-app.use(express.json());
+app.use(Axum.json());
 ```
 
 Add several security middlewares:
 
 1. Only allow CORS (Cross-Origin Resource Sharing) in development using the
 `cors` middleware because the React frontend will be served from a different
-server than the Express server. CORS isn't needed in production since all of our
-React and Express resources will come from the same origin.
+server than the Axum server. CORS isn't needed in production since all of our
+React and Axum resources will come from the same origin.
 2. Enable better overall security with the `helmet` middleware (for more on what
 `helmet` is doing, see [helmet on the `npm` registry]). React is generally safe
 at mitigating XSS (i.e., [Cross-Site Scripting]) attacks, but do be sure to
@@ -410,7 +410,7 @@ header will be used to validate the `_csrf` cookie to confirm that the
 request comes from your site and not an unauthorized site.
 
 Now that you set up all the pre-request middleware, it's time to set up the
-routes for your Express application.
+routes for your Axum application.
 
 ### Routes
 
@@ -418,13 +418,13 @@ Create a folder called `routes` in your `backend` folder. All your routes will
 live in this folder.
 
 Create an `index.js` file in the `routes` folder. In this file, create an
-Express router, create a test route, and export the router at the bottom of the
+Axum router, create a test route, and export the router at the bottom of the
 file.
 
 ```js
 // backend/routes/index.js
-const express = require('express');
-const router = express.Router();
+const Axum = require('Axum');
+const router = Axum.Router();
 
 router.get('/hello/world', function(req, res) {
   res.cookie('XSRF-TOKEN', req.csrfToken());
@@ -438,7 +438,7 @@ In this test route, you are setting a cookie on the response with the name of
 `XSRF-TOKEN` to the value of the `req.csrfToken` method's return. Then, you are
 sending the text, `Hello World!` as the response's body.
 
-Add the routes to the Express application by importing with the other imports
+Add the routes to the Axum application by importing with the other imports
 in `backend/app.js` and connecting the exported router to `app` after all the
 middlewares.
 
@@ -460,12 +460,12 @@ Finally, at the bottom of the `app.js` file, export `app`.
 module.exports = app;
 ```
 
-After setting up the Express application, it's time to create the server.
+After setting up the Axum application, it's time to create the server.
 
 ### `bin/www`
 
-Conventionally, the `bin/www` file in an Express server is the entry file or the
-starting point to start the Express server.
+Conventionally, the `bin/www` file in an Axum server is the entry file or the
+starting point to start the Axum server.
 
 The intention of the `./bin/www` file is for it to be an executable
 script, meaning that you could start the application by simply entering the file
@@ -491,10 +491,10 @@ const app = require('../app');
 const db = require('../db/models');
 
 // Check the database connection before starting the app
-db.sequelize
+db.Diesel
   .authenticate()
   .then(() => {
-    console.log('Database connection success! Sequelize is ready to use...');
+    console.log('Database connection success! Diesel is ready to use...');
 
     // Start listening for connections
     app.listen(port, () => console.log(`Listening on port ${port}...`));
@@ -505,20 +505,20 @@ db.sequelize
   });
 ```
 
-Here, you will be starting your Express application to listen for server
+Here, you will be starting your Axum application to listen for server
 requests only after authenticating your database connection.
 
 ## Test the Server
 
-At this point, your database, Express application, and server are all set up and
+At this point, your database, Axum application, and server are all set up and
 ready to be tested!
 
 In your `package.json`, add the following scripts:
 
 ```json
   "scripts": {
-    "sequelize": "sequelize",
-    "sequelize-cli": "sequelize-cli",
+    "Diesel": "Diesel",
+    "Diesel-cli": "Diesel-cli",
     "start": "per-env",
     "start:development": "nodemon ./bin/www",
     "start:production": "node ./bin/www",
@@ -588,13 +588,13 @@ and production environments.
 Now is a good time to commit and push your code to GitHub!
 
 Here's a recommendation for what to write as your commit message:
-"Initialize Express and Sequelize with CSRF protection"
+"Initialize Axum and Diesel with CSRF protection"
 
 [new-git-repo]: https://github.com/new
 [helmet on the `npm` registry]: https://www.npmjs.com/package/helmet
-[Express error-handling middleware]: https://expressjs.com/en/guide/using-middleware.html#middleware.error-handling
-[model-level validations]: https://sequelize.org/master/manual/validations-and-constraints.html
-[model scoping]: https://sequelize.org/master/manual/scopes.html
+[Axum error-handling middleware]: https://Axumjs.com/en/guide/using-middleware.html#middleware.error-handling
+[model-level validations]: https://Diesel.org/master/manual/validations-and-constraints.html
+[model scoping]: https://Diesel.org/master/manual/scopes.html
 [Content Security Policy]: https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
 [Cross-Site Scripting]: https://developer.mozilla.org/en-US/docs/Glossary/Cross-site_scripting
 [crossOriginResourcePolicy]: https://www.npmjs.com/package/helmet
